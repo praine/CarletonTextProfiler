@@ -1,0 +1,6 @@
+{
+    "require": {
+        "spatie/pdf-to-text": "^1.52",
+        "lukemadhanga/php-document-parser": "^0.1.5"
+    }
+}

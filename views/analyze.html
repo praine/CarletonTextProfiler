@@ -1,0 +1,43 @@
+<div id="app" class='container'>
+
+  <ul class="nav nav-pills mb-3">
+    <li class="nav-item">
+      <a @click='screen="upload"' :class="['nav-link',screen=='upload'?'active':'']" href="javascript:void(0)">Upload</a>
+    </li>
+    <li class="nav-item">
+      <a @click='screen="copypaste"' :class="['nav-link',screen=='copypaste'?'active':'']" href="javascript:void(0)" href="#">Copy &amp; Paste</a>
+    </li>
+    <li class="nav-item">
+      <a @click='screen="results"' :class="['nav-link',screen=='results'?'active':'']" href="javascript:void(0)" href="#">Results</a>
+    </li>
+  </ul>
+
+  <div v-show='screen=="upload"'>
+    <p class="lead">Upload PDF, Word, or Text files:</p>
+    <div class="form-check form-check-inline">
+      <input v-model='processMethod' class="form-check-input" type="radio" name="processMethod" id="processMethodBatched" value="batched">
+      <label class="form-check-label" for="processMethodBatched">Batched</label>
+    </div>
+    <div class="form-check form-check-inline">
+      <input v-model='processMethod' class="form-check-input" type="radio" name="processMethod" id="processMethodMerged" value="merged">
+      <label class="form-check-label" for="processMethodMerged">Merged</label>
+    </div>
+    <div class="mb-4 dropzone" id="myDropzone"></div>
+    <hr>
+    <div style='height:50px;text-align:center'>
+      <button :disabled='!hasFiles || processing' @click='clearFiles' class="btn btn-danger d-inline-block">Clear</button>
+      <button :disabled='!hasFiles || processing' @click='processFiles' class="btn btn-primary d-inline-block">Process</button>
+    </div>
+  </div>
+
+  <div v-show="screen=='copypaste'">
+    <p class="lead">Copy and paste text:</p>
+    <textarea style='height:200px;resize:none;' class="form-control"></textarea>
+  </div>
+
+  <div v-show='screen=="results"'>
+
+    {{results}}
+
+  </div>
+</div>
