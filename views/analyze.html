@@ -14,15 +14,21 @@
 
   <div v-show='screen=="upload"'>
     <p class="lead">Upload PDF, Word, or Text files:</p>
+    <div class="mb-4 dropzone" id="myDropzone"></div>
+    <hr>
+    <p class="fw-bold">File processing method:</p>
     <div class="form-check form-check-inline">
       <input v-model='processMethod' class="form-check-input" type="radio" name="processMethod" id="processMethodMerged" value="merged">
-      <label class="form-check-label" for="processMethodMerged">Merged</label>
+      <label class="form-check-label" for="processMethodMerged">Merge</label>
     </div>
-        <div class="form-check form-check-inline">
+    <div class="form-check form-check-inline">
       <input v-model='processMethod' class="form-check-input" type="radio" name="processMethod" id="processMethodBatched" value="batched">
-      <label class="form-check-label" for="processMethodBatched">Batched</label>
+      <label class="form-check-label" for="processMethodBatched">Batch</label>
     </div>
-    <div class="mb-4 dropzone" id="myDropzone"></div>
+    <div>
+      <small v-if='processMethod=="merged"' class="text-muted">All files will be merged into a single text</small>
+      <small v-if='processMethod=="batched"' class="text-muted">Each file will be processed separately</small>
+    </div>
     <hr>
     <div style='height:50px;text-align:center'>
       <button :disabled='!hasFiles || processing' @click='clearFiles' class="btn btn-danger d-inline-block">Clear</button>
