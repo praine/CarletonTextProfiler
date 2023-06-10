@@ -5,8 +5,9 @@ var app = new Vue({
     myDropzone: null,
     processing: false,
     hasFiles: false,
-    results: null,
-    processMethod: 'batched'
+    response: null,
+    plainText:'',
+    processMethod: 'merged'
   },
   mounted() {
 
@@ -40,11 +41,16 @@ var app = new Vue({
     });
 
     vm.myDropzone.on("successmultiple", (file, response) => {
-      console.log("success!");
       console.log(response);
       vm.processing = false;
-      vm.screen='results';
-      vm.results=response;
+      
+      vm.response=JSON.parse(response);
+      if(vm.response.result=='success'){
+        vm.plainText=vm.response.text.trim();
+        vm.screen='results';
+      }else{
+        alert(vm.response.message);
+      }
       vm.clearFiles();
     });
 

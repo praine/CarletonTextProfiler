@@ -15,12 +15,12 @@
   <div v-show='screen=="upload"'>
     <p class="lead">Upload PDF, Word, or Text files:</p>
     <div class="form-check form-check-inline">
-      <input v-model='processMethod' class="form-check-input" type="radio" name="processMethod" id="processMethodBatched" value="batched">
-      <label class="form-check-label" for="processMethodBatched">Batched</label>
-    </div>
-    <div class="form-check form-check-inline">
       <input v-model='processMethod' class="form-check-input" type="radio" name="processMethod" id="processMethodMerged" value="merged">
       <label class="form-check-label" for="processMethodMerged">Merged</label>
+    </div>
+        <div class="form-check form-check-inline">
+      <input v-model='processMethod' class="form-check-input" type="radio" name="processMethod" id="processMethodBatched" value="batched">
+      <label class="form-check-label" for="processMethodBatched">Batched</label>
     </div>
     <div class="mb-4 dropzone" id="myDropzone"></div>
     <hr>
@@ -37,7 +37,9 @@
 
   <div v-show='screen=="results"'>
 
-    {{results}}
+    <textarea class="form-control" style='height:300px;resize:none;'>
+      {{plainText}}
+    </textarea>
 
   </div>
 </div>
