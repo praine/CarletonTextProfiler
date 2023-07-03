@@ -5,10 +5,10 @@
       <a @click='screen="upload"' :class="['nav-link',screen=='upload'?'active':'']" href="javascript:void(0)">Upload</a>
     </li>
     <li class="nav-item">
-      <a @click='screen="copypaste"' :class="['nav-link',screen=='copypaste'?'active':'']" href="javascript:void(0)" href="#">Copy &amp; Paste</a>
+      <a @click='screen="copypaste"' :class="['nav-link',screen=='copypaste'?'active':'','disabled']" href="javascript:void(0)" href="#">Copy &amp; Paste</a>
     </li>
     <li class="nav-item">
-      <a @click='screen="results"' :class="['nav-link',screen=='results'?'active':'']" href="javascript:void(0)" href="#">Results</a>
+      <a @click='screen="results"' :class="['nav-link',screen=='results'?'active':'',response?'':'disabled']" href="javascript:void(0)" href="#">Results</a>
     </li>
   </ul>
 
@@ -22,7 +22,7 @@
       <label class="form-check-label" for="processMethodMerged">Merge</label>
     </div>
     <div class="form-check form-check-inline">
-      <input v-model='processMethod' class="form-check-input" type="radio" name="processMethod" id="processMethodBatched" value="batched">
+      <input disabled v-model='processMethod' class="form-check-input" type="radio" name="processMethod" id="processMethodBatched" value="batched">
       <label class="form-check-label" for="processMethodBatched">Batch</label>
     </div>
     <div>
@@ -42,10 +42,83 @@
   </div>
 
   <div v-show='screen=="results"'>
+    <p class="fw-bold">ESLA Level</p>
+    <div class="form-check form-check-inline">
+      <input v-model='eslaLevel' class="form-check-input" type="radio" name="esla-level" id="esla-1300" value="1300">
+      <label class="form-check-label" for="esla-1300">1300</label>
+    </div>
+    <div class="form-check form-check-inline">
+      <input v-model='eslaLevel' class="form-check-input" type="radio" name="esla-level" id="esla-1500" value="1500">
+      <label class="form-check-label" for="esla-1500">1500</label>
+    </div>
+    <div class="form-check form-check-inline">
+      <input v-model='eslaLevel' class="form-check-input" type="radio" name="esla-level" id="esla-1900" value="1900">
+      <label class="form-check-label" for="esla-1900">1900</label>
+    </div>
 
-    <textarea class="form-control" style='height:300px;resize:none;'>
-      {{plainText}}
-    </textarea>
+    <div class='my-3'>
+      <p class="fw-bold">Typical Student Word Knowledge ({{tswk}}%)</p>
+      <input style='width:100%' v-model.number='tswk' type="range" min="1" max="100" value="80" class="slider" id="tswk">
+    </div>
 
+    <div class="row">
+      <div class="col-9">
+        <div id='markup'>
+
+          <div v-if='response'>
+            <div v-for='(tag,idx) in response.tags' :class='tagClasses(tag,idx)'>{{tag.word}}</div>
+          </div>
+
+        </div>
+      </div>
+      <div class="col-3">
+
+        <table class="table">
+          <tbody>
+            <tr>
+              <th style='background-color:blue'></th>
+              <td>Proper Noun</td>
+            </tr>
+            <tr>
+              <th style='background-color:green'></th>
+              <td>Known Word</td>
+            </tr>
+            <tr>
+              <th style='background-color:purple'></th>
+              <td>Academic Unknown Word</td>
+            </tr>
+            <tr>
+              <th style='background-color:red'></th>
+              <td>Non-Academic Unknown Word</td>
+            </tr>
+            <tr>
+              <th style='background-color:orange'></th>
+              <td>Number</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div style='height:300px;overflow-y:auto;border:1px solid black;margin-top:5px;'>
+      <table class="sortable" style='width:100%;'>
+        <thead>
+          <tr>
+            <th>Flemma Head</th>
+            <th>Flemma Head Freq.</th>
+            <th class="no-sort">Forms</th>
+            <th>Category</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for='key in Object.keys(forms)'>
+            <td>{{key}}</td>
+            <td>{{forms[key].count}}</td>
+            <td><div v-for='type in forms[key].types'>{{type.word}} ({{type.count}})</div></td>
+            <td>{{forms[key].category}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>

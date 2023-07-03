@@ -1,0 +1,27 @@
+#markup {
+  height: 250px;
+  overflow-y: auto;
+  border: 1px solid black;
+  padding:5px;
+}
+.tag{
+  display:inline-block;
+}
+.tagspace{
+  margin-right:5px;
+}
+.propn{
+  color:blue;
+}
+.known{
+  color:green;
+}
+.awl{
+  color:purple;
+}
+.unknown{
+  color:red;
+}
+.num{
+  color:orange;
+}
