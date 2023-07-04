@@ -1,7 +1,12 @@
 <?php
+
 require_once  '/var/www/vendor/autoload.php';
+
 use Spatie\PdfToText\Pdf;
 use LukeMadhanga\DocumentParser;
+
+if(empty($_POST)){$_POST=json_decode(file_get_contents("php://input"), true);}
+
 $text="";
 
 if($_POST['processMethod']=="merged"){
@@ -23,8 +28,35 @@ if($_POST['processMethod']=="merged"){
     }
   }
   
+  // Remove line-breaks
+  
   $text = str_replace(array("\r", "\n"), ' ', $text);
   $text=preg_replace("/[ ]+/"," ",$text);
+  
+  // Get SpaCy tags
+  
+  $tags = getTags($text);
+
+  echo json_encode(["result"=>"success","tags"=>$tags]);
+  
+} else if($_POST['processMethod']=="batched"){
+  echo json_encode(["result"=>"error","message"=>"Batched processing isn't available at this time!","text"=>$text,"files"=>$_FILES,"post"=>$_POST]);
+} else if($_POST['processMethod']=="copypaste"){
+  
+  // Remove line-breaks
+  
+  $text = str_replace(array("\r", "\n"), ' ', $_POST['pastedText']);
+  $text=preg_replace("/[ ]+/"," ",$text);
+  
+  // Get SpaCy tags
+  
+  $tags = getTags($text);
+  
+  echo json_encode(["result"=>"success","tags"=>$tags]);
+  
+}
+
+function getTags($text){
   
   // Load ESLA data
   
@@ -65,10 +97,7 @@ if($_POST['processMethod']=="merged"){
   }
   
   unlink("/var/www/temp/".$unique.".txt");
-
-  echo json_encode(["result"=>"success","tags"=>$tags,"esla_data_length"=>count($esla_data),"types"=>$types_array]);
-} else{
-  echo json_encode(["result"=>"error","message"=>"Batched processing isn't available at this time!","text"=>$text,"files"=>$_FILES,"post"=>$_POST]);
+  return $tags;
 }
 
 function getEslaItemByHeadword($esla_types_array,$esla_data,$headword){

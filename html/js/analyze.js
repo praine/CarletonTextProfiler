@@ -1,7 +1,10 @@
 var app = new Vue({
   el: '#app',
+  mixins: [mainMixin],
   data: {
-    forms:{},
+    pastedText: '',
+    showAdvancedSettings: false,
+    forms: {},
     tswk: 80,
     eslaLevel: 1300,
     screen: 'upload',
@@ -31,6 +34,7 @@ var app = new Vue({
 
     vm.myDropzone.on("sending", function(file, xhr, formData) {
       formData.append("processMethod", vm.processMethod);
+      vm.showLoadingModal();
     });
 
     vm.myDropzone.on("addedfile", file => {
@@ -47,10 +51,11 @@ var app = new Vue({
       vm.processing = false;
 
       vm.response = JSON.parse(response);
+      vm.hideLoadingModal();
       console.log(vm.response);
       if (vm.response.result == 'success') {
         vm.screen = 'results';
-        vm.forms=vm.getForms();
+        vm.forms = vm.getForms();
       } else {
         alert(vm.response.message);
       }
@@ -62,40 +67,65 @@ var app = new Vue({
 
   },
   methods: {
+    clearText() {
+      this.pastedText = '';
+    },
+    processText() {
+      var vm = this;
+      vm.showLoadingModal();
+      axios
+        .post("/file-upload.php", {
+          processMethod: "copypaste",
+          pastedText: vm.pastedText
+        })
+        .then(function(response) {
+          vm.hideLoadingModal();
+          vm.response = response.data;
+          if (vm.response.result == 'success') {
+            vm.screen = 'results';
+            vm.forms = vm.getForms();
+          } else {
+            alert(vm.response.message);
+          }
+        })
+        .catch(function(error) {
+          console.error(error);
+        });
+    },
     getForms() {
       var vm = this;
       var forms = {},
-        found,tagClasses,category;
+        found, tagClasses, category;
       if (this.response) {
-        this.response.tags.forEach(function(tag,idx) {
+        this.response.tags.forEach(function(tag, idx) {
           if (tag.esla_item) {
             if (!forms[tag.esla_item.headword]) {
-              tagClasses=vm.tagClasses(tag,idx);
-              Object.keys(tagClasses).forEach(function(key){
-                if(tagClasses[key] && !['tag','tagspace'].includes(key)){
-                  category=key.toUpperCase();
+              tagClasses = vm.tagClasses(tag, idx);
+              Object.keys(tagClasses).forEach(function(key) {
+                if (tagClasses[key] && !['tag', 'tagspace'].includes(key)) {
+                  category = key.toUpperCase();
                 }
               })
               forms[tag.esla_item.headword] = {
                 count: 1,
-                category:category,
+                category: category,
                 types: [{
-                  word: tag.pos=="PROPN"?tag.word:tag.word.toLowerCase(),
+                  word: tag.pos == "PROPN" ? tag.word : tag.word.toLowerCase(),
                   count: 1
                 }]
               };
             } else {
               forms[tag.esla_item.headword].count++;
               found = forms[tag.esla_item.headword].types.find(function(e) {
-                if(tag.pos=="PROPN"){
+                if (tag.pos == "PROPN") {
                   return e.word == tag.word
-                }else{
-                  return e.word.toLowerCase()==tag.word.toLowerCase()
+                } else {
+                  return e.word.toLowerCase() == tag.word.toLowerCase()
                 }
               });
               if (!found) {
                 forms[tag.esla_item.headword].types.push({
-                  word: tag.pos=="PROPN"?tag.word:tag.word.toLowerCase(),
+                  word: tag.pos == "PROPN" ? tag.word : tag.word.toLowerCase(),
                   count: 1
                 })
               } else {
@@ -105,7 +135,7 @@ var app = new Vue({
           }
         })
         return forms;
-      }else{
+      } else {
         return {};
       }
     },

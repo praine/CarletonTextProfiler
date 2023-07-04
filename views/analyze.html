@@ -5,7 +5,7 @@
       <a @click='screen="upload"' :class="['nav-link',screen=='upload'?'active':'']" href="javascript:void(0)">Upload</a>
     </li>
     <li class="nav-item">
-      <a @click='screen="copypaste"' :class="['nav-link',screen=='copypaste'?'active':'','disabled']" href="javascript:void(0)" href="#">Copy &amp; Paste</a>
+      <a @click='screen="copypaste"' :class="['nav-link',screen=='copypaste'?'active':'']" href="javascript:void(0)" href="#">Copy &amp; Paste</a>
     </li>
     <li class="nav-item">
       <a @click='screen="results"' :class="['nav-link',screen=='results'?'active':'',response?'':'disabled']" href="javascript:void(0)" href="#">Results</a>
@@ -38,10 +38,18 @@
 
   <div v-show="screen=='copypaste'">
     <p class="lead">Copy and paste text:</p>
-    <textarea style='height:200px;resize:none;' class="form-control"></textarea>
+    <textarea v-model='pastedText' style='height:200px;resize:none;' class="form-control"></textarea>
+    <hr>
+    <div style='height:50px;text-align:center'>
+      <button :disabled='!pastedText.trim().length || processing' @click='clearText' class="btn btn-danger d-inline-block">Clear</button>
+      <button :disabled='!pastedText.trim().length || processing' @click='processText' class="btn btn-primary d-inline-block">Process</button>
+    </div>
   </div>
 
   <div v-show='screen=="results"'>
+    <button class="btn btn-primary float-end" type="button" @click='showAdvancedSettings=!showAdvancedSettings'>
+      <i class="bi bi-sliders"></i>
+    </button>
     <p class="fw-bold">ESLA Level</p>
     <div class="form-check form-check-inline">
       <input v-model='eslaLevel' class="form-check-input" type="radio" name="esla-level" id="esla-1300" value="1300">
@@ -56,10 +64,14 @@
       <label class="form-check-label" for="esla-1900">1900</label>
     </div>
 
-    <div class='my-3'>
-      <p class="fw-bold">Typical Student Word Knowledge ({{tswk}}%)</p>
-      <input style='width:100%' v-model.number='tswk' type="range" min="1" max="100" value="80" class="slider" id="tswk">
+    <div v-if='showAdvancedSettings' id="advancedSettings">
+      <div class='my-3'>
+        <p class="fw-bold">Typical Student Word Knowledge ({{tswk}}%)</p>
+        <input style='width:100%' v-model.number='tswk' type="range" min="1" max="100" value="80" class="slider" id="tswk">
+      </div>
     </div>
+    
+    <hr>
 
     <div class="row">
       <div class="col-9">
@@ -114,7 +126,9 @@
           <tr v-for='key in Object.keys(forms)'>
             <td>{{key}}</td>
             <td>{{forms[key].count}}</td>
-            <td><div v-for='type in forms[key].types'>{{type.word}} ({{type.count}})</div></td>
+            <td>
+              <div v-for='type in forms[key].types'>{{type.word}} ({{type.count}})</div>
+            </td>
             <td>{{forms[key].category}}</td>
           </tr>
         </tbody>
