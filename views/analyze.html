@@ -13,7 +13,7 @@
   </ul>
 
   <div v-show='screen=="upload"'>
-    <p class="lead">Upload PDF, Word, or Text files:</p>
+    <p class="lead">Upload PDF, Word, or Text files (max {{maxWords}} words total):</p>
     <div class="mb-4 dropzone" id="myDropzone"></div>
     <hr>
     <p class="fw-bold">File processing method:</p>
@@ -22,7 +22,7 @@
       <label class="form-check-label" for="processMethodMerged">Merge</label>
     </div>
     <div class="form-check form-check-inline">
-      <input disabled v-model='processMethod' class="form-check-input" type="radio" name="processMethod" id="processMethodBatched" value="batched">
+      <input v-model='processMethod' class="form-check-input" type="radio" name="processMethod" id="processMethodBatched" value="batched">
       <label class="form-check-label" for="processMethodBatched">Batch</label>
     </div>
     <div>
@@ -37,7 +37,7 @@
   </div>
 
   <div v-show="screen=='copypaste'">
-    <p class="lead">Copy and paste text:</p>
+    <p class="lead">Copy and paste text (max {{maxWords}} words total):</p>
     <textarea v-model='pastedText' style='height:200px;resize:none;' class="form-control"></textarea>
     <hr>
     <div style='height:50px;text-align:center'>
@@ -47,6 +47,16 @@
   </div>
 
   <div v-show='screen=="results"'>
+    
+    <ul class="nav nav-tabs" v-if='response && response.result=="success"' style='margin-bottom:20px;'>
+      <li class="nav-item" v-for='(item,idx) in response.tags_array'>
+        <a @click='tagArrayPointer=idx' :class="['nav-link',tagArrayPointer==idx?'active':'']" href="javascript:void(0)">{{item.fileName}}</a>
+      </li>
+    </ul>
+    
+    <div class="alert alert-success" v-if='response && response.result=="success" && getKnownWordsPercent()>=textIsGoodPercent'>A good choice for ESLA {{eslaLevel}} students – they will likely already know {{getKnownWordsPercent()}}% of the words in the text.</div>
+    <div class="alert alert-danger" v-if='response && response.result=="success" && getKnownWordsPercent()<textIsGoodPercent'>A bad choice for ESLA {{eslaLevel}} students as there are too many unknown words  – they will likely know only {{getKnownWordsPercent()}}% of the words in the text.</div>
+
     <button class="btn btn-primary float-end" type="button" @click='showAdvancedSettings=!showAdvancedSettings'>
       <i class="bi bi-sliders"></i>
     </button>
@@ -67,7 +77,11 @@
     <div v-if='showAdvancedSettings' id="advancedSettings">
       <div class='my-3'>
         <p class="fw-bold">Typical Student Word Knowledge ({{tswk}}%)</p>
-        <input style='width:100%' v-model.number='tswk' type="range" min="1" max="100" value="80" class="slider" id="tswk">
+        <input style='width:100%' v-model.number='tswk' type="range" min="1" max="100" value="80" class="slider" id="tswkSlider">
+      </div>
+      <div class='my-3'>
+        <p class="fw-bold">Percent of Word Knowledge Required ({{textIsGoodPercent}}%)</p>
+        <input style='width:100%' v-model.number='textIsGoodPercent' type="range" min="1" max="100" value="95" class="slider" id="textIsGoodSlider">
       </div>
     </div>
     
@@ -77,8 +91,8 @@
       <div class="col-9">
         <div id='markup'>
 
-          <div v-if='response'>
-            <div v-for='(tag,idx) in response.tags' :class='tagClasses(tag,idx)'>{{tag.word}}</div>
+          <div v-if='response && response.result=="success"'>
+            <div v-for='(tag,idx) in response.tags_array[tagArrayPointer].tags' :class='tagClasses(tag,idx)'>{{tag.word}}</div>
           </div>
 
         </div>

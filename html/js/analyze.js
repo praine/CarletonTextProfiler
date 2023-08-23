@@ -2,6 +2,7 @@ var app = new Vue({
   el: '#app',
   mixins: [mainMixin],
   data: {
+    tagArrayPointer: 0,
     pastedText: '',
     showAdvancedSettings: false,
     forms: {},
@@ -13,7 +14,17 @@ var app = new Vue({
     hasFiles: false,
     response: null,
     plainText: '',
-    processMethod: 'merged'
+    processMethod: 'merged',
+    maxWords:1500,
+    textIsGoodPercent:95
+  },
+  watch: {
+    tagArrayPointer() {
+      this.forms = this.getForms();
+    },
+    eslaLevel(){
+      this.forms=this.getForms();
+    }
   },
   mounted() {
 
@@ -38,12 +49,10 @@ var app = new Vue({
     });
 
     vm.myDropzone.on("addedfile", file => {
-      console.log("A file has been added");
       vm.hasFiles = true;
     });
 
     vm.myDropzone.on("removedfile", file => {
-      console.log("A file has been removed");
       vm.hasFiles = vm.myDropzone.files.length > 0;
     });
 
@@ -52,12 +61,15 @@ var app = new Vue({
 
       vm.response = JSON.parse(response);
       vm.hideLoadingModal();
-      console.log(vm.response);
       if (vm.response.result == 'success') {
         vm.screen = 'results';
         vm.forms = vm.getForms();
       } else {
-        alert(vm.response.message);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          html: vm.response.message,
+        })
       }
       vm.clearFiles();
     });
@@ -67,6 +79,22 @@ var app = new Vue({
 
   },
   methods: {
+    getKnownWordsPercent(){
+      var vm = this;
+      var knownCount=0,totalCount=0,form=null;
+      this.response.tags_array[this.tagArrayPointer].tags.forEach(function(tag){
+        if(tag.esla_item){
+          form=vm.forms[tag.esla_item.headword];
+        }else{
+          form=null;
+        }
+        if(form){totalCount++;}
+        if(form && ['NUM','KNOWN'].includes(form.category)){
+          knownCount++;
+        }
+      })
+      return Math.round(knownCount/totalCount*100);
+    },
     clearText() {
       this.pastedText = '';
     },
@@ -85,7 +113,11 @@ var app = new Vue({
             vm.screen = 'results';
             vm.forms = vm.getForms();
           } else {
-            alert(vm.response.message);
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              html: vm.response.message,
+            })
           }
         })
         .catch(function(error) {
@@ -97,7 +129,7 @@ var app = new Vue({
       var forms = {},
         found, tagClasses, category;
       if (this.response) {
-        this.response.tags.forEach(function(tag, idx) {
+        this.response.tags_array[this.tagArrayPointer].tags.forEach(function(tag, idx) {
           if (tag.esla_item) {
             if (!forms[tag.esla_item.headword]) {
               tagClasses = vm.tagClasses(tag, idx);
@@ -140,7 +172,7 @@ var app = new Vue({
       }
     },
     tagClasses(tag, idx) {
-      var nextTag = this.response.tags[idx + 1],
+      var nextTag = this.response.tags_array[this.tagArrayPointer].tags[idx + 1],
         tagspace = false,
         propn = false,
         known = false,

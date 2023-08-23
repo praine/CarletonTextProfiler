@@ -8,51 +8,70 @@ use LukeMadhanga\DocumentParser;
 if(empty($_POST)){$_POST=json_decode(file_get_contents("php://input"), true);}
 
 $text="";
+$tags_array=[];
+$maxWords=1500;
 
-if($_POST['processMethod']=="merged"){
-  
-  // Combine all files into single text
-  
+if($_POST['processMethod']=="batched" || $_POST['processMethod']=="merged"){
+      
   foreach($_FILES['file']['tmp_name'] as $i=>$tmp_name){
+    
     $type=$_FILES['file']['type'][$i];
+    
+    $fileName=$_FILES['file']['name'][$i];
     if($type=="application/pdf"){
-      $text.=Pdf::getText($tmp_name);
+      $text=Pdf::getText($tmp_name);
     }
     elseif($type=="application/vnd.openxmlformats-officedocument.wordprocessingml.document" || $type=="application/msword"){
       $t=DocumentParser::parseFromFile($tmp_name,$type);
       $tags = array('</p>','<br />','<br>','<hr />','<hr>','</h1>','</h2>','</h3>','</h4>','</h5>','</h6>');
       $t = str_replace($tags,"\n",$t);
-      $text.=strip_tags($t);
+      $text=strip_tags($t);
     }elseif($type=='text/plain'){
-      $text.=file_get_contents($tmp_name);
+      $text=file_get_contents($tmp_name);
+    }
+    
+    // Remove line-breaks
+  
+    $text = str_replace(array("\r", "\n"), ' ', $text);
+    $text=preg_replace("/[ ]+/"," ",$text);
+    $tags_array[] = ["fileName"=>$fileName,"text"=>$text];
+    
+  }
+
+  $mergedText=implode(" ",array_map(function($e){return $e['text'];},$tags_array));
+  $wordCount=str_word_count($mergedText);
+  
+  if($wordCount>$maxWords){
+    die(json_encode(["result"=>"error","message"=>"Uploaded text exceeds maximum word length.<br/> Total text length: ".$wordCount." words | Max length: ".$maxWords." words"]));
+  }
+  
+  if($_POST['processMethod']=="batched"){
+    foreach($tags_array as $idx=>$array){
+      $tags_array[$idx]['tags']=getTags($array['text']);
     }
   }
   
-  // Remove line-breaks
+  else if($_POST['processMethod']=="merged"){
+    $tags_array=[["fileName"=>"Merged Text","text"=>$mergedText,"tags"=>getTags($mergedText)]];
+  }
+    
+  echo json_encode(["result"=>"success","tags_array"=>$tags_array]);
   
-  $text = str_replace(array("\r", "\n"), ' ', $text);
-  $text=preg_replace("/[ ]+/"," ",$text);
-  
-  // Get SpaCy tags
-  
-  $tags = getTags($text);
-
-  echo json_encode(["result"=>"success","tags"=>$tags]);
-  
-} else if($_POST['processMethod']=="batched"){
-  echo json_encode(["result"=>"error","message"=>"Batched processing isn't available at this time!","text"=>$text,"files"=>$_FILES,"post"=>$_POST]);
 } else if($_POST['processMethod']=="copypaste"){
   
   // Remove line-breaks
   
   $text = str_replace(array("\r", "\n"), ' ', $_POST['pastedText']);
   $text=preg_replace("/[ ]+/"," ",$text);
+  $wordCount=str_word_count($text);
   
-  // Get SpaCy tags
+  if($wordCount>$maxWords){
+    die(json_encode(["result"=>"error","message"=>"Uploaded text exceeds maximum word length.<br/> Total text length: ".$wordCount." words | Max length: ".$maxWords." words"]));
+  }
+    
+  $tags_array[] = ["fileName"=>"Pasted Text","text"=>$text,"tags"=>getTags($text)];
   
-  $tags = getTags($text);
-  
-  echo json_encode(["result"=>"success","tags"=>$tags]);
+  echo json_encode(["result"=>"success","tags_array"=>$tags_array]);
   
 }
 
