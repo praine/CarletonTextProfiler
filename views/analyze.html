@@ -54,8 +54,8 @@
       </li>
     </ul>
     
-    <div class="alert alert-success" v-if='response && response.result=="success" && getKnownWordsPercent()>=textIsGoodPercent'>A good choice for ESLA {{eslaLevel}} students – they will likely already know {{getKnownWordsPercent()}}% of the words in the text.</div>
-    <div class="alert alert-danger" v-if='response && response.result=="success" && getKnownWordsPercent()<textIsGoodPercent'>A bad choice for ESLA {{eslaLevel}} students as there are too many unknown words  – they will likely know only {{getKnownWordsPercent()}}% of the words in the text.</div>
+    <div class="alert alert-success" v-if='response && response.result=="success" && getKnownWordsPercent()>=pwkr'>A good choice for ESLA {{eslaLevel}} students – they will likely already know {{getKnownWordsPercent()}}% of the words in the text.</div>
+    <div class="alert alert-danger" v-if='response && response.result=="success" && getKnownWordsPercent()<pwkr'>A bad choice for ESLA {{eslaLevel}} students as there are too many unknown words  – they will likely know only {{getKnownWordsPercent()}}% of the words in the text.</div>
 
     <button class="btn btn-primary float-end" type="button" @click='showAdvancedSettings=!showAdvancedSettings'>
       <i class="bi bi-sliders"></i>
@@ -80,8 +80,8 @@
         <input style='width:100%' v-model.number='tswk' type="range" min="1" max="100" value="80" class="slider" id="tswkSlider">
       </div>
       <div class='my-3'>
-        <p class="fw-bold">Percent of Word Knowledge Required ({{textIsGoodPercent}}%)</p>
-        <input style='width:100%' v-model.number='textIsGoodPercent' type="range" min="1" max="100" value="95" class="slider" id="textIsGoodSlider">
+        <p class="fw-bold">Percent of Word Knowledge Required ({{pwkr}}%)</p>
+        <input style='width:100%' v-model.number='pwkr' type="range" min="1" max="100" value="95" class="slider" id="textIsGoodSlider">
       </div>
     </div>
     

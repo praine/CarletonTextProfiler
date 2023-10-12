@@ -15,15 +15,21 @@ var app = new Vue({
     response: null,
     plainText: '',
     processMethod: 'merged',
-    maxWords:1500,
-    textIsGoodPercent:95
+    maxWords: 1500,
+    pwkr: 95
   },
   watch: {
     tagArrayPointer() {
       this.forms = this.getForms();
     },
-    eslaLevel(){
-      this.forms=this.getForms();
+    eslaLevel() {
+      this.forms = this.getForms();
+    },
+    tswk() {
+      this.forms = this.getForms();
+    },
+    pwkr() {
+      this.forms = this.getForms();
     }
   },
   mounted() {
@@ -79,21 +85,25 @@ var app = new Vue({
 
   },
   methods: {
-    getKnownWordsPercent(){
+    getKnownWordsPercent() {
       var vm = this;
-      var knownCount=0,totalCount=0,form=null;
-      this.response.tags_array[this.tagArrayPointer].tags.forEach(function(tag){
-        if(tag.esla_item){
-          form=vm.forms[tag.esla_item.headword];
-        }else{
-          form=null;
+      var knownCount = 0,
+        totalCount = 0,
+        form = null;
+      this.response.tags_array[this.tagArrayPointer].tags.forEach(function(tag) {
+        if (tag.esla_item) {
+          form = vm.forms[tag.esla_item.headword];
+        } else {
+          form = null;
         }
-        if(form){totalCount++;}
-        if(form && ['NUM','KNOWN'].includes(form.category)){
+        if (form) {
+          totalCount++;
+        }
+        if (form && ['NUM', 'KNOWN', 'PART'].includes(form.category)) {
           knownCount++;
         }
       })
-      return Math.round(knownCount/totalCount*100);
+      return Math.round(knownCount / totalCount * 100);
     },
     clearText() {
       this.pastedText = '';
@@ -127,42 +137,44 @@ var app = new Vue({
     getForms() {
       var vm = this;
       var forms = {},
-        found, tagClasses, category;
+        found, tagClasses, category, form;
       if (this.response) {
-        this.response.tags_array[this.tagArrayPointer].tags.forEach(function(tag, idx) {
+        this.response.tags_array[this.tagArrayPointer].tags.filter(function(e){return e.pos!="PUNCT";}).forEach(function(tag, idx) {
+          form = tag.word;
           if (tag.esla_item) {
-            if (!forms[tag.esla_item.headword]) {
-              tagClasses = vm.tagClasses(tag, idx);
-              Object.keys(tagClasses).forEach(function(key) {
-                if (tagClasses[key] && !['tag', 'tagspace'].includes(key)) {
-                  category = key.toUpperCase();
-                }
-              })
-              forms[tag.esla_item.headword] = {
-                count: 1,
-                category: category,
-                types: [{
-                  word: tag.pos == "PROPN" ? tag.word : tag.word.toLowerCase(),
-                  count: 1
-                }]
-              };
-            } else {
-              forms[tag.esla_item.headword].count++;
-              found = forms[tag.esla_item.headword].types.find(function(e) {
-                if (tag.pos == "PROPN") {
-                  return e.word == tag.word
-                } else {
-                  return e.word.toLowerCase() == tag.word.toLowerCase()
-                }
-              });
-              if (!found) {
-                forms[tag.esla_item.headword].types.push({
-                  word: tag.pos == "PROPN" ? tag.word : tag.word.toLowerCase(),
-                  count: 1
-                })
-              } else {
-                found.count++;
+            form = tag.esla_item.headword;
+          }
+          if (!forms[form]) {
+            tagClasses = vm.tagClasses(tag, idx);
+            Object.keys(tagClasses).forEach(function(key) {
+              if (tagClasses[key] && !['tag', 'tagspace'].includes(key)) {
+                category = key.toUpperCase();
               }
+            })
+            forms[form] = {
+              count: 1,
+              category: category,
+              types: [{
+                word: tag.pos == "PROPN" ? tag.word : tag.word.toLowerCase(),
+                count: 1
+              }]
+            };
+          } else {
+            forms[form].count++;
+            found = forms[form].types.find(function(e) {
+              if (tag.pos == "PROPN") {
+                return e.word == tag.word
+              } else {
+                return e.word.toLowerCase() == tag.word.toLowerCase()
+              }
+            });
+            if (!found) {
+              forms[form].types.push({
+                word: tag.pos == "PROPN" ? tag.word : tag.word.toLowerCase(),
+                count: 1
+              })
+            } else {
+              found.count++;
             }
           }
         })
@@ -179,19 +191,23 @@ var app = new Vue({
         isKnown = false,
         awl = false,
         unknown = false,
-        num = false;
+        num = false,
+        part = false;
       var tagTswk = 0;
       if (tag.esla_item) {
         tagTswk = 100 - (100 * tag.esla_item[this.eslaLevel]);
       }
-      if (nextTag && nextTag.pos == "PUNCT") {
+      if (nextTag && ["PUNCT","PART"].includes(nextTag.pos)) {
         tagspace = false;
       } else {
         tagspace = true;
       }
       if (tag.pos == "PROPN") {
         propn = true;
-      } else if (tag.pos == "NUM") {
+      }else if (tag.pos == "PART") {
+        part = true;
+      } 
+      else if (tag.pos == "NUM") {
         num = true;
       } else if (tagTswk >= this.tswk) {
         known = true;
@@ -207,7 +223,8 @@ var app = new Vue({
         'known': known,
         'awl': awl,
         'unknown': unknown,
-        'num': num
+        'num': num,
+        'part':part
       };
     },
     clearFiles() {

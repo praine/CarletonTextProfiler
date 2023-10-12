@@ -9,7 +9,7 @@ if(empty($_POST)){$_POST=json_decode(file_get_contents("php://input"), true);}
 
 $text="";
 $tags_array=[];
-$maxWords=1500;
+$maxWords=10000;
 
 if($_POST['processMethod']=="batched" || $_POST['processMethod']=="merged"){
       
@@ -97,17 +97,17 @@ function getTags($text){
   
   // Tag text with SpaCy
   
-  $unqiue=uniqid();
-  file_put_contents("/var/www/temp/".$unqiue.".txt",trim($text));
+  $unique=uniqid();
+  file_put_contents("/var/www/temp/".$unique.".txt",trim($text));
   
-  $output = shell_exec('/var/www/.env/bin/python3 /var/www/process.py '.$unqiue);
-  preg_match_all("/\('[^)]+\)/",$output,$matches);
+  $output = shell_exec('/var/www/.env/bin/python3 /var/www/process.py '.$unique);
+  preg_match_all("/\([^)]+\)/",$output,$matches);
   $tags=[];
   foreach($matches[0] as $match){
     $match=trim($match,'()');
     $elements=explode(", ",$match);
-    $word=trim($elements[0],"'");
-    $pos=trim($elements[1],"'");
+    $word=trim($elements[0],'"');
+    $pos=trim($elements[1],'"');
     $tags[]=[
       "word"=>$word,
       "pos"=>$pos,

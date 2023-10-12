@@ -3,3 +3,4 @@ vendor/
 temp/
 .env/
 esla.csv
+html/index.nginx-debian.html
