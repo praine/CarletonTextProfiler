@@ -1,4 +1,4 @@
-<div id="app" class='container'>
+<div id="app" class='container' v-cloak>
 
   <ul class="nav nav-pills mb-3">
     <li class="nav-item">
@@ -13,7 +13,8 @@
   </ul>
 
   <div v-show='screen=="upload"'>
-    <p class="lead">Upload PDF, Word, or Text files (max {{maxWords}} words total):</p>
+    <p class="lead">Upload PDF, Word, or Text files</p>
+    <small class="text-muted">Max Files: 25 | Max Total Words: {{maxWords[processMethod]}} | Max Single File Size: 4MB | Max Total File Size: 100MB</small>
     <div class="mb-4 dropzone" id="myDropzone"></div>
     <hr>
     <p class="fw-bold">File processing method:</p>
@@ -37,7 +38,7 @@
   </div>
 
   <div v-show="screen=='copypaste'">
-    <p class="lead">Copy and paste text (max {{maxWords}} words total):</p>
+    <p class="lead">Copy and paste text (max {{maxWords[processMethod]}} words total):</p>
     <textarea v-model='pastedText' style='height:200px;resize:none;' class="form-control"></textarea>
     <hr>
     <div style='height:50px;text-align:center'>

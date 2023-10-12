@@ -15,10 +15,15 @@ var app = new Vue({
     response: null,
     plainText: '',
     processMethod: 'merged',
-    maxWords: 1500,
+    maxWords: {batched:25000,merged:5000},
     pwkr: 95
   },
   watch: {
+    screen(){
+      if(this.screen=='copypaste'){
+        this.processMethod="merged";
+      }
+    },
     tagArrayPointer() {
       this.forms = this.getForms();
     },
@@ -41,12 +46,12 @@ var app = new Vue({
     vm.myDropzone = new Dropzone("div#myDropzone", {
       url: "/file-upload.php",
       acceptedFiles: 'application/pdf, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document, text/plain',
-      maxFilesize: 50,
+      maxFilesize: 4,
       autoProcessQueue: false,
       addRemoveLinks: true,
       uploadMultiple: true,
-      parallelUploads: 5,
-      maxFiles: 5
+      parallelUploads: 50,
+      maxFiles: 25
     });
 
     vm.myDropzone.on("sending", function(file, xhr, formData) {
@@ -197,7 +202,7 @@ var app = new Vue({
       if (tag.esla_item) {
         tagTswk = 100 - (100 * tag.esla_item[this.eslaLevel]);
       }
-      if (nextTag && ["PUNCT","PART"].includes(nextTag.pos)) {
+      if (nextTag && (["PUNCT"].includes(nextTag.pos) || nextTag.word.includes("'"))) {
         tagspace = false;
       } else {
         tagspace = true;

@@ -28,3 +28,6 @@
 .num{
   color:orange;
 }
+[v-cloak] {
+  display: none;
+}
