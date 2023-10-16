@@ -1,3 +1,7 @@
+html,body{
+  margin-bottom:50px;
+  margin-top:20px;
+}
 #markup {
   height: 250px;
   overflow-y: auto;

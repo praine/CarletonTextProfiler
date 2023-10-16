@@ -16,19 +16,21 @@
     <p class="lead">Upload PDF, Word, or Text files</p>
     <small class="text-muted">Max Files: 25 | Max Total Words: {{maxWords[processMethod]}} | Max Single File Size: 4MB | Max Total File Size: 100MB</small>
     <div class="mb-4 dropzone" id="myDropzone"></div>
-    <hr>
-    <p class="fw-bold">File processing method:</p>
-    <div class="form-check form-check-inline">
-      <input v-model='processMethod' class="form-check-input" type="radio" name="processMethod" id="processMethodMerged" value="merged">
-      <label class="form-check-label" for="processMethodMerged">Merge</label>
-    </div>
-    <div class="form-check form-check-inline">
-      <input v-model='processMethod' class="form-check-input" type="radio" name="processMethod" id="processMethodBatched" value="batched">
-      <label class="form-check-label" for="processMethodBatched">Batch</label>
-    </div>
-    <div>
-      <small v-if='processMethod=="merged"' class="text-muted">All files will be merged into a single text</small>
-      <small v-if='processMethod=="batched"' class="text-muted">Each file will be processed separately</small>
+    <div v-if='multipleFiles'>
+      <hr>
+      <p class="fw-bold">File processing method:</p>
+      <div class="form-check form-check-inline">
+        <input v-model='processMethod' class="form-check-input" type="radio" name="processMethod" id="processMethodMerged" value="merged">
+        <label class="form-check-label" for="processMethodMerged">Merge</label>
+      </div>
+      <div class="form-check form-check-inline">
+        <input v-model='processMethod' class="form-check-input" type="radio" name="processMethod" id="processMethodBatched" value="batched">
+        <label class="form-check-label" for="processMethodBatched">Batch</label>
+      </div>
+      <div>
+        <small v-if='processMethod=="merged"' class="text-muted">All files will be merged into a single text</small>
+        <small v-if='processMethod=="batched"' class="text-muted">Each file will be processed separately</small>
+      </div>
     </div>
     <hr>
     <div style='height:50px;text-align:center'>
@@ -75,13 +77,13 @@
       <label class="form-check-label" for="esla-1900">1900</label>
     </div>
 
-    <div v-if='showAdvancedSettings' id="advancedSettings">
+    <div v-show='showAdvancedSettings' id="advancedSettings">
       <div class='my-3'>
-        <p class="fw-bold">Typical Student Word Knowledge ({{tswk}}%)</p>
+        <p class="fw-bold">Typical Student Word Knowledge ({{tswk}}%) <i data-tippy-content='This slider sets the percentage of students who need to know a word in order for that word to be considered known by a given ESLA level.' class="bi bi-info-circle-fill"></i></p>
         <input style='width:100%' v-model.number='tswk' type="range" min="1" max="100" value="80" class="slider" id="tswkSlider">
       </div>
       <div class='my-3'>
-        <p class="fw-bold">Percent of Word Knowledge Required ({{pwkr}}%)</p>
+        <p class="fw-bold">Percent of Word Knowledge Required ({{pwkr}}%) <i data-tippy-content='This slider sets the percentage of words in a text that need to be known in order for that text to be considered a good text for a given ESLA level.' class="bi bi-info-circle-fill"></i></p>
         <input style='width:100%' v-model.number='pwkr' type="range" min="1" max="100" value="95" class="slider" id="textIsGoodSlider">
       </div>
     </div>
@@ -127,12 +129,13 @@
       </div>
     </div>
 
+    <button @click='downloadTable()' class="btn btn-primary"><i class="bi bi-file-earmark-arrow-down"></i> Download Table</button>
     <div style='height:300px;overflow-y:auto;border:1px solid black;margin-top:10px;'>
-      <table class="sortable" style='width:100%;'>
+      <table id='data-table' class="sortable" style='width:100%;'>
         <thead>
           <tr>
-            <th>Flemma Head</th>
-            <th>Flemma Head Freq.</th>
+            <th>Word Group</th>
+            <th>Word Group Freq.</th>
             <th class="no-sort">Forms</th>
             <th>Category</th>
           </tr>

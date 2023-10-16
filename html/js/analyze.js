@@ -2,6 +2,7 @@ var app = new Vue({
   el: '#app',
   mixins: [mainMixin],
   data: {
+    multipleFiles:false,
     tagArrayPointer: 0,
     pastedText: '',
     showAdvancedSettings: false,
@@ -19,6 +20,11 @@ var app = new Vue({
     pwkr: 95
   },
   watch: {
+    multipleFiles(){
+      if(!this.multipleFiles){
+        this.processMethod="merged";
+      }
+    },
     screen(){
       if(this.screen=='copypaste'){
         this.processMethod="merged";
@@ -61,10 +67,12 @@ var app = new Vue({
 
     vm.myDropzone.on("addedfile", file => {
       vm.hasFiles = true;
+      vm.multipleFiles=vm.myDropzone.files.length > 1;
     });
 
     vm.myDropzone.on("removedfile", file => {
       vm.hasFiles = vm.myDropzone.files.length > 0;
+      vm.multipleFiles=vm.myDropzone.files.length > 1;
     });
 
     vm.myDropzone.on("successmultiple", (file, response) => {
@@ -84,12 +92,17 @@ var app = new Vue({
       }
       vm.clearFiles();
     });
+    
+    tippy('i')
 
   },
   created() {
 
   },
   methods: {
+    downloadTable(){
+      $("#data-table").table2csv();
+    },
     getKnownWordsPercent() {
       var vm = this;
       var knownCount = 0,
@@ -216,7 +229,7 @@ var app = new Vue({
         num = true;
       } else if (tagTswk >= this.tswk) {
         known = true;
-      } else if (tag.awl) {
+      } else if (tag.esla_item && tag.esla_item.awl) {
         awl = true;
       } else if (tag.pos != "PUNCT") {
         unknown = true;
