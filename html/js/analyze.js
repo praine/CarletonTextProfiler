@@ -56,7 +56,7 @@ var app = new Vue({
       autoProcessQueue: false,
       addRemoveLinks: true,
       uploadMultiple: true,
-      parallelUploads: 50,
+      parallelUploads: 25,
       maxFiles: 25
     });
 

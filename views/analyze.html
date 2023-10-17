@@ -79,7 +79,7 @@
 
     <div v-show='showAdvancedSettings' id="advancedSettings">
       <div class='my-3'>
-        <p class="fw-bold">Typical Student Word Knowledge ({{tswk}}%) <i data-tippy-content='This slider sets the percentage of students who need to know a word in order for that word to be considered known by a given ESLA level.' class="bi bi-info-circle-fill"></i></p>
+        <p class="fw-bold">Typical Student Word Knowledge ({{tswk}}%) <i data-tippy-content='This slider sets the percentage of students at a given ESLA level who need to have known a word (in past diagnostic vocabulary tests) for that word to be considered known at that ESLA level.' class="bi bi-info-circle-fill"></i></p>
         <input style='width:100%' v-model.number='tswk' type="range" min="1" max="100" value="80" class="slider" id="tswkSlider">
       </div>
       <div class='my-3'>
