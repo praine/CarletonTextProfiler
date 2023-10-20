@@ -97,35 +97,38 @@
 
     <hr>
 
-    <div class="row">
+    <div class="row" v-if='response && response.result=="success"'>
       <div class="col-9">
         <div id='markup'>
 
-          <div v-if='response && response.result=="success"'>
             <div v-for='(tag,idx) in response.tags_array[tagArrayPointer].tags' :class='tag.classes'>{{tag.word}}</div>
-          </div>
 
         </div>
       </div>
       <div class="col-3">
 
+        <p class="fw-bold">Total Words: {{response.tags_array[tagArrayPointer].tags.filter(function(e){return !['PUNCT', 'SYM', 'PART'].includes(e.pos);}).length}}</p>
         <table class="table">
           <tbody>
             <tr>
               <th style='background-color:blue'></th>
               <td>Proper Nouns</td>
+              <td>{{response.tags_array[tagArrayPointer].tags.filter(function(e){return e.category=="PROPER NOUN";}).length}}</td>
             </tr>
             <tr>
               <th style='background-color:green'></th>
               <td>Known Words</td>
+              <td>{{response.tags_array[tagArrayPointer].tags.filter(function(e){return e.category=="KNOWN";}).length}}</td>
             </tr>
             <tr>
               <th style='background-color:red'></th>
               <td>Unknown Words</td>
+              <td>{{response.tags_array[tagArrayPointer].tags.filter(function(e){return e.category=="UNKNOWN";}).length}}</td>
             </tr>
             <tr>
               <th style='background-color:purple'></th>
               <td>Unknown Words (Academic)</td>
+              <td>{{response.tags_array[tagArrayPointer].tags.filter(function(e){return e.category=="UNKNOWN ACADEMIC";}).length}}</td>
             </tr>
 
           </tbody>

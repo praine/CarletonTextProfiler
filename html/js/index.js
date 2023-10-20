@@ -4,18 +4,7 @@ var app = new Vue({
   data: {
     multipleFiles: false,
     tagArrayPointer: 0,
-    pastedText: `
-    1, 2, 3, 4, 5, 6, 7, 8, 9, 10
-    One, two, three, four, five, six, seven, eight, nine, ten
-    1st, 2nd, 3rd, 4th, 5th, 6th, 7th, 8th, 9th, 10th
-    First, second, third, fourth, fifth, sixth, seventh, eighth, ninth, tenth
-    John met Sally in London and they went to Piccadilly Circus together. 
-    The ticket vendor asked John for $100.
-    John said that he would like to pass unimpeded.
-    He wondered if the ticket was subsidized.
-    The ticket inspector contradicted him.
-    Don't do that please.
-    `,
+    pastedText: "",
     showAdvancedSettings: false,
     forms: {},
     tswk: 80,
@@ -210,7 +199,8 @@ var app = new Vue({
           category = "UNKNOWN";
         }
         
-
+        tag.category=category;
+        
         if (!forms[form]) {
           forms[form] = {
             count: 1,
