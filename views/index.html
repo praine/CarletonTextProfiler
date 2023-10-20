@@ -1,5 +1,160 @@
-<div id="app" class='container'>
-  
-  <a role='button' class='btn btn-primary mx-auto d-block' href="/analyze.php">Analyze Text</a>
-  
+<div id="app" class='container' v-cloak>
+
+  <ul class="nav nav-pills mb-3">
+        <li class="nav-item">
+      <a @click='screen="copypaste"' :class="['nav-link',screen=='copypaste'?'active':'',response?'disabled':'']" href="javascript:void(0)" href="#">Copy &amp; Paste</a>
+    </li>
+    <li class="nav-item">
+      <a @click='screen="upload"' :class="['nav-link',screen=='upload'?'active':'',response?'disabled':'']" href="javascript:void(0)">File Upload</a>
+    </li>
+    <li class="nav-item">
+      <a @click='screen="results"' :class="['nav-link',screen=='results'?'active':'',response?'':'disabled']" href="javascript:void(0)" href="#">Results</a>
+    </li>
+  </ul>
+
+  <div v-show='screen=="upload"'>
+    <p class="lead">Upload PDF, Word, or Text files</p>
+    <small class="text-muted">Max Files: 25 | Max Total Words: {{maxWords[processMethod]}} | Max Single File Size: 4MB | Max Total File Size: 100MB</small>
+    <div class="mb-4 dropzone" id="myDropzone"></div>
+    <div v-if='multipleFiles'>
+      <hr>
+      <p class="fw-bold">File processing method:</p>
+      <div class="form-check form-check-inline">
+        <input v-model='processMethod' class="form-check-input" type="radio" name="processMethod" id="processMethodMerged" value="merged">
+        <label class="form-check-label" for="processMethodMerged">Merge</label>
+      </div>
+      <div class="form-check form-check-inline">
+        <input v-model='processMethod' class="form-check-input" type="radio" name="processMethod" id="processMethodBatched" value="batched">
+        <label class="form-check-label" for="processMethodBatched">Batch</label>
+      </div>
+      <div>
+        <small v-if='processMethod=="merged"' class="text-muted">All files will be merged into a single text</small>
+        <small v-if='processMethod=="batched"' class="text-muted">Each file will be processed separately</small>
+      </div>
+    </div>
+    <hr>
+    <div style='height:50px;text-align:center'>
+      <button :disabled='!hasFiles || processing' @click='clearFiles' class="btn btn-danger d-inline-block">Clear</button>
+      <button :disabled='!hasFiles || processing' @click='processFiles' class="btn btn-primary d-inline-block">Process</button>
+    </div>
+  </div>
+
+  <div v-show="screen=='copypaste'">
+    <p class="lead">Copy and paste text (max {{maxWords[processMethod]}} words total):</p>
+    <textarea v-model='pastedText' style='height:200px;resize:none;' class="form-control"></textarea>
+    <hr>
+    <div style='height:50px;text-align:center'>
+      <button :disabled='!pastedText.trim().length || processing' @click='clearText' class="btn btn-danger d-inline-block">Clear</button>
+      <button :disabled='!pastedText.trim().length || processing' @click='processText' class="btn btn-primary d-inline-block">Process</button>
+    </div>
+  </div>
+
+  <div v-show='screen=="results"'>
+
+    <ul class="nav nav-tabs" v-if='response && response.result=="success"' style='margin-bottom:20px;'>
+      <li class="nav-item" v-for='(item,idx) in response.tags_array'>
+        <a @click='tagArrayPointer=idx' :class="['nav-link',tagArrayPointer==idx?'active':'']" href="javascript:void(0)">{{item.fileName}}</a>
+      </li>
+    </ul>
+
+    <div class="alert alert-success" v-if='response && response.result=="success" && getKnownWordsPercent()>=pwkr'>A good choice for ESLA {{eslaLevel}} students – they will likely already know {{getKnownWordsPercent()}}% of the words in the text.</div>
+    <div class="alert alert-danger" v-if='response && response.result=="success" && getKnownWordsPercent()<pwkr'>A bad choice for ESLA {{eslaLevel}} students as there are too many unknown words – they will likely know only {{getKnownWordsPercent()}}% of the words in the text.</div>
+
+    <button class="btn btn-primary float-end" type="button" @click='showAdvancedSettings=!showAdvancedSettings'>
+      <i class="bi bi-sliders"></i>
+    </button>
+    <p class="fw-bold">ESLA Level</p>
+    <div class="form-check form-check-inline">
+      <input v-model='eslaLevel' class="form-check-input" type="radio" name="esla-level" id="esla-1300" value="1300">
+      <label class="form-check-label" for="esla-1300">1300</label>
+    </div>
+    <div class="form-check form-check-inline">
+      <input v-model='eslaLevel' class="form-check-input" type="radio" name="esla-level" id="esla-1500" value="1500">
+      <label class="form-check-label" for="esla-1500">1500</label>
+    </div>
+    <div class="form-check form-check-inline">
+      <input v-model='eslaLevel' class="form-check-input" type="radio" name="esla-level" id="esla-1900" value="1900">
+      <label class="form-check-label" for="esla-1900">1900</label>
+    </div>
+
+    <div v-show='showAdvancedSettings' id="advancedSettings">
+      <div class='my-3'>
+        <p class="fw-bold">Typical Student Word Knowledge ({{tswk}}%) <i data-tippy-content='These radio buttons set the percentage of students at a given ESLA level who need to have known a word (in past diagnostic vocabulary tests) for that word to be considered known at that ESLA level.'
+            class="bi bi-info-circle-fill info-box"></i></p>
+        <div class="form-check form-check-inline" v-for='n in radio_steps'>
+          <input v-model='tswk' class="form-check-input" type="radio" name="tswk-radio" :id="'tswk-radio-'+n" :value="n">
+          <label class="form-check-label" :for="'tswk-radio-'+n">{{n}}%</label>
+        </div>
+      </div>
+      <div class='my-3'>
+        <p class="fw-bold">Percent of Word Knowledge Required ({{pwkr}}%) <i data-tippy-content='These radio buttons set the percentage of words in a text that need to be known in order for that text to be considered a good text for a given ESLA level.' class="bi bi-info-circle-fill info-box"></i></p>
+        <div class="form-check form-check-inline" v-for='n in radio_steps'>
+          <input v-model='pwkr' class="form-check-input" type="radio" name="pwkr-radio" :id="'pwkr-radio-'+n" :value="n">
+          <label class="form-check-label" :for="'pwkr-radio-'+n">{{n}}%</label>
+        </div>
+      </div>
+    </div>
+
+    <hr>
+
+    <div class="row">
+      <div class="col-9">
+        <div id='markup'>
+
+          <div v-if='response && response.result=="success"'>
+            <div v-for='(tag,idx) in response.tags_array[tagArrayPointer].tags' :class='tag.classes'>{{tag.word}}</div>
+          </div>
+
+        </div>
+      </div>
+      <div class="col-3">
+
+        <table class="table">
+          <tbody>
+            <tr>
+              <th style='background-color:blue'></th>
+              <td>Proper Nouns</td>
+            </tr>
+            <tr>
+              <th style='background-color:green'></th>
+              <td>Known Words</td>
+            </tr>
+            <tr>
+              <th style='background-color:red'></th>
+              <td>Unknown Words</td>
+            </tr>
+            <tr>
+              <th style='background-color:purple'></th>
+              <td>Unknown Words (Academic)</td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <button @click='downloadTable()' class="btn btn-primary mt-2 mb-2"><i class="bi bi-file-earmark-arrow-down"></i> Download Table</button>
+    <div style='height:300px;overflow-y:auto;border:1px solid black;'>
+      <table id='data-table' class="sortable" style='width:100%;'>
+        <thead>
+          <tr>
+            <th>Word Group</th>
+            <th>Word Group Freq.</th>
+            <th class="no-sort">Forms</th>
+            <th>Category</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for='key in Object.keys(forms)'>
+            <td>{{key}}</td>
+            <td>{{forms[key].count}}</td>
+            <td>
+              <div v-for='type in forms[key].types'>{{type.word}} ({{type.count}})</div>
+            </td>
+            <td>{{forms[key].category}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>

@@ -11,26 +11,20 @@ html,body{
 .tag{
   display:inline-block;
 }
-.tagspace{
+.space-after{
   margin-right:5px;
 }
-.propn{
+.green{
+  color:green;
+}
+.blue{
   color:blue;
 }
-.known{
-  color:green;
-}
-.part{
-  color:green;
-}
-.awl{
+.purple{
   color:purple;
 }
-.unknown{
+.red{
   color:red;
-}
-.num{
-  color:orange;
 }
 [v-cloak] {
   display: none;
