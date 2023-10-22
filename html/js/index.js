@@ -4,7 +4,7 @@ var app = new Vue({
   data: {
     multipleFiles: false,
     tagArrayPointer: 0,
-    pastedText: "",
+    pastedText: ``,
     showAdvancedSettings: false,
     forms: {},
     tswk: 80,
@@ -24,6 +24,11 @@ var app = new Vue({
     radio_steps: [50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100]
   },
   watch: {
+    showAdvancedSettings(){
+      Vue.nextTick(function(){
+        tippy('.info-box');
+      })
+    },
     multipleFiles() {
       if (!this.multipleFiles) {
         this.processMethod = "merged";
@@ -102,7 +107,7 @@ var app = new Vue({
       vm.clearFiles();
     });
 
-    tippy('.info-box')
+    
 
   },
   created() {
@@ -113,26 +118,9 @@ var app = new Vue({
       $("#data-table").table2csv();
     },
     getKnownWordsPercent() {
-      var vm = this;
-      var knownCount = 0,
-        totalCount = 0,
-        form = null;
-      this.response.tags_array[this.tagArrayPointer].tags.filter(function(e) {
-        return e.tag != "SYM";
-      }).forEach(function(tag) {
-        if (tag.esla_item) {
-          form = vm.forms[tag.esla_item.headword];
-        } else {
-          form = null;
-        }
-        if (form) {
-          totalCount++;
-        }
-        if (form && ['NUM', 'KNOWN', 'PART', 'PROPN'].includes(form.category)) {
-          knownCount++;
-        }
-      })
-      return Math.round(knownCount / totalCount * 100);
+      var totalWords = this.response.tags_array[this.tagArrayPointer].tags.filter(function(e){return !['PUNCT', 'SYM', 'PART','INTJ'].includes(e.pos);}).length;
+      var knownWords = this.response.tags_array[this.tagArrayPointer].tags.filter(function(e){return e.category=="KNOWN";}).length;
+      return Math.round(knownWords/totalWords*100);
     },
     clearText() {
       this.pastedText = '';
@@ -169,7 +157,7 @@ var app = new Vue({
       var forms = {},
         found, tagClasses, category, form;
       this.response.tags_array[this.tagArrayPointer].tags.filter(function(tag) {
-        return !['PUNCT', 'SYM', 'PART'].includes(tag.pos);
+        return !['PUNCT', 'SYM', 'PART','INTJ'].includes(tag.pos);
       }).forEach(function(tag, idx) {
 
         form = tag.word.toUpperCase();
@@ -178,24 +166,28 @@ var app = new Vue({
         if (tag.esla_item) {
           form = tag.esla_item.headword;
         }
-
+        
         // Form is marked known
-        if (['NUM', 'AUX'].includes(tag.pos) || tag.tswk >= vm.tswk) {
+        if (['NUM', 'PART', 'AUX', 'SYM', 'PUNCT','INTJ'].includes(tag.pos) || tag.tswk >= vm.tswk) {
           category = "KNOWN";
         }
 
+        else if(!tag.esla_item){
+          category="UNCLEAR";
+        }
+
         // Tag is marked blue (proper noun)
-        if (tag.pos == "PROPN") {
+        else if (tag.pos == "PROPN") {
           category = "PROPER NOUN";
         }
 
         // Tag is marked purple (unknown academic)
-        if (!category && tag.esla_item && tag.esla_item.awl) {
+        else if (tag.esla_item && tag.esla_item.awl) {
           category = "UNKNOWN ACADEMIC";
         }
 
         // Tag is marked red (unknown non-academic)
-        if (!category && (!tag.esla_item || !tag.esla_item.awl)) {
+        else {
           category = "UNKNOWN";
         }
         
@@ -230,7 +222,7 @@ var app = new Vue({
     },
     getClasses() {
       var vm = this;
-      var nextTag, spaceAfter, green, blue, purple, red;
+      var nextTag, spaceAfter, green, blue, purple, red, orange;
       vm.response.tags_array[vm.tagArrayPointer].tags.forEach(function(tag, i) {
 
         nextTag = vm.response.tags_array[vm.tagArrayPointer].tags[i + 1];
@@ -239,6 +231,7 @@ var app = new Vue({
         blue = false;
         purple = false;
         red = false;
+        orange=false;
 
         if (tag.esla_item) {
           tag.tswk = 100 - (100 * tag.esla_item[vm.eslaLevel]);
@@ -260,32 +253,38 @@ var app = new Vue({
         }
 
         // Tag is marked green (known)
-        if (['NUM', 'PART', 'AUX', 'SYM', 'PUNCT'].includes(tag.pos) || tag.tswk >= vm.tswk) {
+        if (['NUM', 'PART', 'AUX', 'SYM', 'PUNCT','INTJ'].includes(tag.pos) || tag.tswk >= vm.tswk) {
           green = true;
         }
 
+        else if(!tag.esla_item){
+          console.log('no esla item for tag!');
+          orange=true;
+        }
+
         // Tag is marked blue (proper noun)
-        if (tag.pos == "PROPN") {
+        else if (tag.pos == "PROPN") {
           blue = true;
         }
 
         // Tag is marked purple (unknown academic)
-        if (!green && !blue && tag.esla_item && tag.esla_item.awl) {
+        else if (tag.esla_item && tag.esla_item.awl) {
           purple = true;
         }
 
         // Tag is marked red (unknown non-academic)
-        if (!green && !blue && (!tag.esla_item || !tag.esla_item.awl)) {
+        else{
           red = true;
         }
-
+        
         tag.classes = {
           'tag': true,
           'space-after': spaceAfter,
           'green': green,
           'blue': blue,
           'purple': purple,
-          'red': red
+          'red': red,
+          'orange':orange
         };
       });
     },

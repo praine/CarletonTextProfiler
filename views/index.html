@@ -77,7 +77,7 @@
       <label class="form-check-label" for="esla-1900">1900</label>
     </div>
 
-    <div v-show='showAdvancedSettings' id="advancedSettings">
+    <div v-if='showAdvancedSettings' id="advancedSettings">
       <div class='my-3'>
         <p class="fw-bold">Typical Student Word Knowledge ({{tswk}}%) <i data-tippy-content='These radio buttons set the percentage of students at a given ESLA level who need to have known a word (in past diagnostic vocabulary tests) for that word to be considered known at that ESLA level.'
             class="bi bi-info-circle-fill info-box"></i></p>
@@ -107,7 +107,7 @@
       </div>
       <div class="col-3">
 
-        <p class="fw-bold">Total Words: {{response.tags_array[tagArrayPointer].tags.filter(function(e){return !['PUNCT', 'SYM', 'PART'].includes(e.pos);}).length}}</p>
+        <p class="fw-bold">Total Words: {{response.tags_array[tagArrayPointer].tags.filter(function(e){return !['PUNCT', 'SYM', 'PART','INTJ'].includes(e.pos);}).length}}</p>
         <table class="table">
           <tbody>
             <tr>
@@ -129,6 +129,11 @@
               <th style='background-color:purple'></th>
               <td>Unknown Words (Academic)</td>
               <td>{{response.tags_array[tagArrayPointer].tags.filter(function(e){return e.category=="UNKNOWN ACADEMIC";}).length}}</td>
+            </tr>
+            <tr>
+              <th style='background-color:orange'></th>
+              <td>Unclear (Off-list)</td>
+              <td>{{response.tags_array[tagArrayPointer].tags.filter(function(e){return e.category=="UNCLEAR";}).length}}</td>
             </tr>
 
           </tbody>
