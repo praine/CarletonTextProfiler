@@ -29,6 +29,9 @@ html,body{
 .orange{
   color:orange;
 }
+.black{
+  color:black;
+}
 [v-cloak] {
   display: none;
 }

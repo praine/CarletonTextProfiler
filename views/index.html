@@ -57,8 +57,8 @@
       </li>
     </ul>
 
-    <div class="alert alert-success" v-if='response && response.result=="success" && getKnownWordsPercent()>=pwkr'>A good choice for ESLA {{eslaLevel}} students – they will likely already know {{getKnownWordsPercent()}}% of the words in the text.</div>
-    <div class="alert alert-danger" v-if='response && response.result=="success" && getKnownWordsPercent()<pwkr'>A bad choice for ESLA {{eslaLevel}} students as there are too many unknown words – they will likely know only {{getKnownWordsPercent()}}% of the words in the text.</div>
+    <div class="alert alert-success" v-if='response && response.result=="success" && getKnownItemsPercent()>=pwkr'>A good choice for ESLA {{eslaLevel}} students – they will likely already know {{getKnownItemsPercent()}}% of the words in the text.</div>
+    <div class="alert alert-danger" v-if='response && response.result=="success" && getKnownItemsPercent()<pwkr'>A bad choice for ESLA {{eslaLevel}} students as there are too many unknown words – they will likely know only {{getKnownItemsPercent()}}% of the words in the text.</div>
 
     <button class="btn btn-primary float-end" type="button" @click='showAdvancedSettings=!showAdvancedSettings'>
       <i class="bi bi-sliders"></i>
@@ -107,39 +107,34 @@
       </div>
       <div class="col-3">
 
-        <p class="fw-bold">Total Words: {{response.tags_array[tagArrayPointer].tags.filter(function(e){return !['PUNCT', 'SYM', 'PART','INTJ'].includes(e.pos);}).length}}</p>
+        <p class="fw-bold">Total ESLA Items: {{totalEslaItems()}}</p>
         <table class="table">
           <tbody>
             <tr>
-              <th style='background-color:blue'></th>
-              <td>Proper Nouns</td>
-              <td>{{response.tags_array[tagArrayPointer].tags.filter(function(e){return e.category=="PROPER NOUN";}).length}}</td>
-            </tr>
-            <tr>
               <th style='background-color:green'></th>
-              <td>Known Words</td>
+              <td>Known ESLA Items</td>
               <td>{{response.tags_array[tagArrayPointer].tags.filter(function(e){return e.category=="KNOWN";}).length}}</td>
             </tr>
             <tr>
               <th style='background-color:red'></th>
-              <td>Unknown Words</td>
+              <td>Unknown ESLA Items</td>
               <td>{{response.tags_array[tagArrayPointer].tags.filter(function(e){return e.category=="UNKNOWN";}).length}}</td>
             </tr>
             <tr>
               <th style='background-color:purple'></th>
-              <td>Unknown Words (Academic)</td>
+              <td>Unknown ESLA Items (Academic)</td>
               <td>{{response.tags_array[tagArrayPointer].tags.filter(function(e){return e.category=="UNKNOWN ACADEMIC";}).length}}</td>
-            </tr>
-            <tr>
-              <th style='background-color:orange'></th>
-              <td>Unclear (Off-list)</td>
-              <td>{{response.tags_array[tagArrayPointer].tags.filter(function(e){return e.category=="UNCLEAR";}).length}}</td>
             </tr>
 
           </tbody>
         </table>
       </div>
+      
+      <small class="text-muted">{{response.tags_array[tagArrayPointer].tags.filter(function(e){return e.category=="UNCLEAR";}).length}} <span class='orange'>unclear item(s)</span> are not in the ESLA list and were excluded from text coverage calculations.</small>
+      <small class='text-muted'>{{response.tags_array[tagArrayPointer].tags.filter(function(e){return e.category=="PROPER NOUN";}).length}} <span class='blue'>proper noun(s)</span> were excluded from text coverage calculations.</small>
+      
     </div>
+    
 
     <button @click='downloadTable()' class="btn btn-primary mt-2 mb-2"><i class="bi bi-file-earmark-arrow-down"></i> Download Table</button>
     <div style='height:300px;overflow-y:auto;border:1px solid black;'>

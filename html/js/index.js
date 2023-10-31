@@ -4,7 +4,11 @@ var app = new Vue({
   data: {
     multipleFiles: false,
     tagArrayPointer: 0,
-    pastedText: ``,
+    pastedText: `
+      Are you a flurmi? No I'm a dermifloop.
+      My name is Paul, and I'm a ventriloquist.
+      Can you review these fractions accurately?
+    `,
     showAdvancedSettings: false,
     forms: {},
     tswk: 80,
@@ -114,13 +118,17 @@ var app = new Vue({
 
   },
   methods: {
+    totalEslaItems(){
+      return this.response.tags_array[this.tagArrayPointer].tags.filter(function(e){return e.pos!="PROPN" && e.esla_item;}).length;
+    },
+    knownEslaItems(){
+      return this.response.tags_array[this.tagArrayPointer].tags.filter(function(e){return e.pos!="PROPN" && e.esla_item && e.category=="KNOWN";}).length;
+    },
     downloadTable() {
       $("#data-table").table2csv();
     },
-    getKnownWordsPercent() {
-      var totalWords = this.response.tags_array[this.tagArrayPointer].tags.filter(function(e){return !['PUNCT', 'SYM', 'PART','INTJ'].includes(e.pos);}).length;
-      var knownWords = this.response.tags_array[this.tagArrayPointer].tags.filter(function(e){return e.category=="KNOWN";}).length;
-      return Math.round(knownWords/totalWords*100);
+    getKnownItemsPercent() {
+      return Math.round(this.knownEslaItems()/this.totalEslaItems()*100);
     },
     clearText() {
       this.pastedText = '';
@@ -157,7 +165,7 @@ var app = new Vue({
       var forms = {},
         found, tagClasses, category, form;
       this.response.tags_array[this.tagArrayPointer].tags.filter(function(tag) {
-        return !['PUNCT', 'SYM', 'PART','INTJ'].includes(tag.pos);
+        return !['PUNCT', 'SYM', 'PART'].includes(tag.pos);
       }).forEach(function(tag, idx) {
 
         form = tag.word.toUpperCase();
@@ -168,7 +176,7 @@ var app = new Vue({
         }
         
         // Form is marked known
-        if (['NUM', 'PART', 'AUX', 'SYM', 'PUNCT','INTJ'].includes(tag.pos) || tag.tswk >= vm.tswk) {
+        if (tag.tswk >= vm.tswk) {
           category = "KNOWN";
         }
 
@@ -176,12 +184,12 @@ var app = new Vue({
           category="UNCLEAR";
         }
 
-        // Tag is marked blue (proper noun)
+        // (proper noun)
         else if (tag.pos == "PROPN") {
           category = "PROPER NOUN";
         }
 
-        // Tag is marked purple (unknown academic)
+        // (unknown academic)
         else if (tag.esla_item && tag.esla_item.awl) {
           category = "UNKNOWN ACADEMIC";
         }
@@ -222,7 +230,7 @@ var app = new Vue({
     },
     getClasses() {
       var vm = this;
-      var nextTag, spaceAfter, green, blue, purple, red, orange;
+      var nextTag, spaceAfter, green, blue, purple, red, orange, black;
       vm.response.tags_array[vm.tagArrayPointer].tags.forEach(function(tag, i) {
 
         nextTag = vm.response.tags_array[vm.tagArrayPointer].tags[i + 1];
@@ -232,6 +240,7 @@ var app = new Vue({
         purple = false;
         red = false;
         orange=false;
+        black=false;
 
         if (tag.esla_item) {
           tag.tswk = 100 - (100 * tag.esla_item[vm.eslaLevel]);
@@ -251,9 +260,13 @@ var app = new Vue({
         if (tag.pos == "SYM") {
           spaceAfter = false;
         }
+        
+        if(["PUNCT"].includes(tag.pos)){
+          black=true;
+        }
 
         // Tag is marked green (known)
-        if (['NUM', 'PART', 'AUX', 'SYM', 'PUNCT','INTJ'].includes(tag.pos) || tag.tswk >= vm.tswk) {
+        if (tag.tswk >= vm.tswk) {
           green = true;
         }
 
@@ -284,7 +297,8 @@ var app = new Vue({
           'blue': blue,
           'purple': purple,
           'red': red,
-          'orange':orange
+          'orange':orange,
+          'black':black
         };
       });
     },
