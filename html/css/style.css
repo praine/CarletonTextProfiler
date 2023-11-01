@@ -10,9 +10,12 @@ html,body{
 }
 .tag{
   display:inline-block;
-}
-.space-after{
-  margin-right:5px;
+  border:1px solid black;
+  border-radius:5px;
+  cursor:pointer;
+  background-color:white;
+  padding:3px;
+  margin:3px;
 }
 .green{
   color:green;

@@ -101,37 +101,42 @@
       <div class="col-9">
         <div id='markup'>
 
-            <div v-for='(tag,idx) in response.tags_array[tagArrayPointer].tags' :class='tag.classes'>{{tag.word}}</div>
+            <div @click='showTagDetails(tag)' v-for='(tag,idx) in response.tags_array[tagArrayPointer].tags' :class='tag.classes'>{{tag.word}}</div>
 
         </div>
       </div>
       <div class="col-3">
 
-        <p class="fw-bold">Total ESLA Items: {{totalEslaItems()}}</p>
+        <p class="fw-bold">Total Words: {{totalWords()}}</p>
         <table class="table">
           <tbody>
+                        <tr>
+              <th style='background-color:blue'></th>
+              <td>Proper Nouns</td>
+              <td>{{response.tags_array[tagArrayPointer].tags.filter(function(e){return e.pos=="PROPN";}).length}}</td>
+            </tr>
             <tr>
               <th style='background-color:green'></th>
-              <td>Known ESLA Items</td>
-              <td>{{response.tags_array[tagArrayPointer].tags.filter(function(e){return e.category=="KNOWN";}).length}}</td>
+              <td>Known Words</td>
+              <td>{{knownWords()}}</td>
             </tr>
             <tr>
               <th style='background-color:red'></th>
-              <td>Unknown ESLA Items</td>
+              <td>Unknown Words</td>
               <td>{{response.tags_array[tagArrayPointer].tags.filter(function(e){return e.category=="UNKNOWN";}).length}}</td>
             </tr>
             <tr>
               <th style='background-color:purple'></th>
-              <td>Unknown ESLA Items (Academic)</td>
+              <td>Unknown Academic Words</td>
               <td>{{response.tags_array[tagArrayPointer].tags.filter(function(e){return e.category=="UNKNOWN ACADEMIC";}).length}}</td>
             </tr>
+
 
           </tbody>
         </table>
       </div>
       
       <small class="text-muted">{{response.tags_array[tagArrayPointer].tags.filter(function(e){return e.category=="UNCLEAR";}).length}} <span class='orange'>unclear item(s)</span> are not in the ESLA list and were excluded from text coverage calculations.</small>
-      <small class='text-muted'>{{response.tags_array[tagArrayPointer].tags.filter(function(e){return e.category=="PROPER NOUN";}).length}} <span class='blue'>proper noun(s)</span> were excluded from text coverage calculations.</small>
       
     </div>
     
