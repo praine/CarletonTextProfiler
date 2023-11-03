@@ -4,6 +4,7 @@ var app = new Vue({
   data: {
     multipleFiles: false,
     tagArrayPointer: 0,
+    //pastedText:`In March, the Willows would march to the river's bank. Summer and Autumn, the twins, would spring into action, while Rose, their sister, rose from her bed at dawn. Grace would grace the gardens with her presence, and the family judge, named Judge, would judge their playful contests. With every step and every name, March was more than a month—it was a stage where time danced in delightful loops.`,
     pastedText: `If, how, when, where, why? Do you want Paul's cake? Ought we? Shall we? Whilst you were doing that whereby albeit! Are you a flurmi? No I'm a dermifloop. My name is Paul, and I'm a ventriloquist. Can you review these fractions accurately? I want to send you an e-mail at 5 o'clock. You're not serious. I'll see you in twenty-five minutes. 1 2 3 4 5 6 7 8 9 one two three four five six seven eight nine ten. Hello, Mr. Smith, this is Dr. Smith.`,
     showAdvancedSettings: false,
     forms: {},
@@ -114,11 +115,8 @@ var app = new Vue({
 
 
   },
-  created() {
-
-  },
   methods: {
-    showTagDetails(tag){
+    showTagDetails(tag) {
       alert(JSON.stringify(tag));
     },
     totalWords() {
@@ -132,7 +130,12 @@ var app = new Vue({
       }).length;
     },
     downloadTable() {
-      $("#data-table").table2csv();
+      var r = prompt("Enter file name:");
+      if (r.trim()) {
+        $("#data-table").table2csv({
+          filename: r + '.csv'
+        });
+      }
     },
     getKnownItemsPercent() {
       return Math.round(this.knownWords() / this.totalWords() * 100);
@@ -179,7 +182,7 @@ var app = new Vue({
         form = tag.word.toUpperCase();
         category = "";
         tag.tswk = 0;
-        
+
         if (tag.esla_item) {
           tag.tswk = 100 - (100 * tag.esla_item[vm.eslaLevel]);
           form = tag.esla_item.headword;
@@ -188,16 +191,16 @@ var app = new Vue({
         // (proper noun)
         if (tag.pos == "PROPN") {
           category = "PROPER NOUN";
-        } 
-        
+        }
+
         // Form is marked known
         else if (tag.tswk >= vm.tswk || ['AUX', 'NUM', 'PART'].includes(tag.pos)) {
           category = "KNOWN";
         }
-        
-        // unclear
+
+        // unclassifiable
         else if (!tag.esla_item) {
-          category = "UNCLEAR";
+          category = "UNCLASSIFIABLE";
         }
 
         // (unknown academic)
@@ -217,18 +220,18 @@ var app = new Vue({
             count: 1,
             category: category,
             types: [{
-              word: tag.word,
+              word: tag.word.toUpperCase(),
               count: 1
             }]
           };
         } else {
           forms[form].count++;
           found = forms[form].types.find(function(e) {
-            return e.word == tag.word
+            return e.word.toUpperCase() == tag.word.toUpperCase()
           });
           if (!found) {
             forms[form].types.push({
-              word: tag.word,
+              word: tag.word.toUpperCase(),
               count: 1
             })
           } else {
@@ -246,31 +249,29 @@ var app = new Vue({
 
 
         if (["PUNCT"].includes(tag.pos)) {
-          color='black';
+          color = 'black';
         }
 
         // Tag is marked green (known)
         else if (tag.category == "KNOWN") {
-          color='green';
+          color = 'green';
         }
 
         // Tag is marked blue (proper noun)
         else if (tag.category == "PROPER NOUN") {
-          color='blue';
-        } 
-        
-        else if (tag.category == "UNCLEAR") {
-          color='orange';
+          color = 'blue';
+        } else if (tag.category == "UNCLASSIFIABLE") {
+          color = 'orange';
         }
 
         // Tag is marked purple (unknown academic)
         else if (tag.esla_item && tag.esla_item.awl) {
-          color='purple';
+          color = 'purple';
         }
 
         // Tag is marked red (unknown non-academic)
         else {
-          color='red';
+          color = 'red';
         }
 
         tag.classes = {
