@@ -2,7 +2,7 @@ var app = new Vue({
   el: '#app',
   mixins: [mainMixin],
   data: {
-    whitelist: ["B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "&", "-", "O'CLOCK"],
+    whitelist: ["B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "&", "O'CLOCK"],
     multipleFiles: false,
     tagArrayPointer: 0,
     pastedText: 'My name is Dylan and my name is Grant, & I will grant you 3 wishes in an e-mail at 4 o’clock.',
