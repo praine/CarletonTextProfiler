@@ -38,6 +38,14 @@ if($_POST['processMethod']=="batched" || $_POST['processMethod']=="merged"){
   
     $text = str_replace(array("\r", "\n"), ' ', $text);
     $text=preg_replace("/[ ]+/"," ",$text);
+    
+    // Replace curly quotes with regular quotes
+    $text = str_replace(
+        ["‘", "’", "“", "”", "‛", "„", "′", "″"], // Curly quotes
+        ["'", "'", '"', '"', "'", '"', "'", '"'], // Regular quotes
+        $text
+    );
+    
     $tags_array[] = ["fileName"=>$fileName,"text"=>$text];
     
   }
@@ -69,6 +77,14 @@ if($_POST['processMethod']=="batched" || $_POST['processMethod']=="merged"){
   
   $text = str_replace(array("\r", "\n"), ' ', $_POST['pastedText']);
   $text=preg_replace("/[ ]+/"," ",$text);
+  
+  // Replace curly quotes with regular quotes
+  $text = str_replace(
+      ["‘", "’", "“", "”", "‛", "„", "′", "″"], // Curly quotes
+      ["'", "'", '"', '"', "'", '"', "'", '"'], // Regular quotes
+      $text
+  );
+  
   $wordCount=str_word_count($text);
   
   if($wordCount>$maxWords){

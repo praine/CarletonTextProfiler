@@ -2,10 +2,12 @@ var app = new Vue({
   el: '#app',
   mixins: [mainMixin],
   data: {
+    whitelist: ["B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "&", "-", "O'CLOCK"],
     multipleFiles: false,
     tagArrayPointer: 0,
+    pastedText: 'My name is Dylan and my name is Grant, & I will grant you 3 wishes in an e-mail at 4 o’clock.',
     //pastedText:`In March, the Willows would march to the river's bank. Summer and Autumn, the twins, would spring into action, while Rose, their sister, rose from her bed at dawn. Grace would grace the gardens with her presence, and the family judge, named Judge, would judge their playful contests. With every step and every name, March was more than a month—it was a stage where time danced in delightful loops.`,
-    pastedText: `If, how, when, where, why? Do you want Paul's cake? Ought we? Shall we? Whilst you were doing that whereby albeit! Are you a flurmi? No I'm a dermifloop. My name is Paul, and I'm a ventriloquist. Can you review these fractions accurately? I want to send you an e-mail at 5 o'clock. You're not serious. I'll see you in twenty-five minutes. 1 2 3 4 5 6 7 8 9 one two three four five six seven eight nine ten. Hello, Mr. Smith, this is Dr. Smith.`,
+    //pastedText: `If, how, when, where, why? Do you want Paul's cake? Ought we? Shall we? Whilst you were doing that whereby albeit! Are you a flurmi? No I'm a dermifloop. My name is Paul, and I'm a ventriloquist. Can you review these fractions accurately? I want to send you an e-mail at 5 o'clock. You're not serious. I'll see you in twenty-five minutes. 1 2 3 4 5 6 7 8 9 one two three four five six seven eight nine ten. Hello, Mr. Smith, this is Dr. Smith.`,
     showAdvancedSettings: false,
     forms: {},
     tswk: 80,
@@ -120,13 +122,21 @@ var app = new Vue({
       alert(JSON.stringify(tag));
     },
     totalWords() {
+      var vm = this;
       return this.response.tags_array[this.tagArrayPointer].tags.filter(function(e) {
-        return ['KNOWN', 'UNKNOWN', 'UNKNOWN ACADEMIC', 'PROPER NOUN'].includes(e.category)
+        if (e.category == "PROPER NOUN") {
+          console.log(e.word)
+        }
+        return ['KNOWN', 'UNKNOWN', 'UNKNOWN ACADEMIC', 'PROPER NOUN'].includes(e.category);
       }).length;
     },
-    knownWords() {
+    knownWords(includePropNouns) {
       return this.response.tags_array[this.tagArrayPointer].tags.filter(function(e) {
-        return e.category == "KNOWN"
+        if (includePropNouns) {
+          return ['KNOWN', 'PROPER NOUN'].includes(e.category)
+        } else {
+          return ['KNOWN'].includes(e.category)
+        }
       }).length;
     },
     downloadTable() {
@@ -138,7 +148,7 @@ var app = new Vue({
       }
     },
     getKnownItemsPercent() {
-      return Math.round(this.knownWords() / this.totalWords() * 100);
+      return Math.round(this.knownWords(true) / this.totalWords() * 100);
     },
     clearText() {
       this.pastedText = '';
@@ -183,7 +193,7 @@ var app = new Vue({
         category = "";
         tag.tswk = 0;
 
-        if (tag.esla_item) {
+        if (tag.esla_item && tag.pos != "PROPN") {
           tag.tswk = 100 - (100 * tag.esla_item[vm.eslaLevel]);
           form = tag.esla_item.headword;
         }
@@ -191,10 +201,11 @@ var app = new Vue({
         // (proper noun)
         if (tag.pos == "PROPN") {
           category = "PROPER NOUN";
+          form += " (PN)"
         }
 
         // Form is marked known
-        else if (tag.tswk >= vm.tswk || ['AUX', 'NUM', 'PART'].includes(tag.pos)) {
+        else if (tag.tswk >= vm.tswk || ['AUX', 'NUM', 'PART'].includes(tag.pos) || vm.whitelist.includes(form)) {
           category = "KNOWN";
         }
 
@@ -225,6 +236,7 @@ var app = new Vue({
             }]
           };
         } else {
+
           forms[form].count++;
           found = forms[form].types.find(function(e) {
             return e.word.toUpperCase() == tag.word.toUpperCase()

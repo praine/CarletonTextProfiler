@@ -118,7 +118,7 @@
             <tr>
               <th style='background-color:green'></th>
               <td>Known Words</td>
-              <td>{{knownWords()}}</td>
+              <td>{{knownWords(false)}}</td>
             </tr>
             <tr>
               <th style='background-color:red'></th>
@@ -136,7 +136,7 @@
         </table>
       </div>
       
-      <small class="text-muted">{{response.tags_array[tagArrayPointer].tags.filter(function(e){return e.category=="UNCLASSIFIABLE";}).length}} <span class='orange'>unclassifiable item(s)</span> are not in the ESLA list and were excluded from text coverage calculations.</small>
+      <small v-if='response.tags_array[tagArrayPointer].tags.filter(function(e){return e.category=="UNCLASSIFIABLE";}).length' class="text-muted">{{response.tags_array[tagArrayPointer].tags.filter(function(e){return e.category=="UNCLASSIFIABLE";}).length}} <span class='orange'>unclassifiable item(s)</span> are not in the ESLA list and were excluded from text coverage calculations.</small>
       
     </div>
     
