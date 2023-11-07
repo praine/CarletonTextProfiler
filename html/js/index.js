@@ -14,7 +14,7 @@ var app = new Vue({
     tswk: 80,
     pwkr: 95,
     eslaLevel: 1300,
-    screen: 'upload',
+    screen: 'copypaste',
     myDropzone: null,
     processing: false,
     hasFiles: false,
