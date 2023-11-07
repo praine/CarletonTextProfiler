@@ -2,10 +2,11 @@ var app = new Vue({
   el: '#app',
   mixins: [mainMixin],
   data: {
-    whitelist: ["B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "&", "O'CLOCK"],
+    whitelist: ["B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "&", "O'CLOCK","'S"],
     multipleFiles: false,
     tagArrayPointer: 0,
-    pastedText: 'My name is Dylan and my name is Grant, & I will grant you 3 wishes in an e-mail at 4 o’clock.',
+    pastedText:"It's a lovely day. Let's start it with a laugh. There's my daddy.",
+    //pastedText: 'My name is Dylan and my name is Grant, & I will grant you 3 wishes in an e-mail at 4 o’clock.',
     //pastedText:`In March, the Willows would march to the river's bank. Summer and Autumn, the twins, would spring into action, while Rose, their sister, rose from her bed at dawn. Grace would grace the gardens with her presence, and the family judge, named Judge, would judge their playful contests. With every step and every name, March was more than a month—it was a stage where time danced in delightful loops.`,
     //pastedText: `If, how, when, where, why? Do you want Paul's cake? Ought we? Shall we? Whilst you were doing that whereby albeit! Are you a flurmi? No I'm a dermifloop. My name is Paul, and I'm a ventriloquist. Can you review these fractions accurately? I want to send you an e-mail at 5 o'clock. You're not serious. I'll see you in twenty-five minutes. 1 2 3 4 5 6 7 8 9 one two three four five six seven eight nine ten. Hello, Mr. Smith, this is Dr. Smith.`,
     showAdvancedSettings: false,
@@ -13,7 +14,7 @@ var app = new Vue({
     tswk: 80,
     pwkr: 95,
     eslaLevel: 1300,
-    screen: 'copypaste',
+    screen: 'upload',
     myDropzone: null,
     processing: false,
     hasFiles: false,
@@ -45,8 +46,6 @@ var app = new Vue({
     tagArrayPointer() {
       this.forms = this.getForms();
       this.getClasses();
-
-
     },
     eslaLevel() {
       this.forms = this.getForms();
@@ -97,13 +96,14 @@ var app = new Vue({
     });
 
     vm.myDropzone.on("successmultiple", (file, response) => {
+      console.log(response);
       vm.processing = false;
-
       vm.response = JSON.parse(response);
       vm.hideLoadingModal();
       if (vm.response.result == 'success') {
         vm.screen = 'results';
         vm.forms = vm.getForms();
+        vm.getClasses();
       } else {
         Swal.fire({
           icon: 'error',
@@ -114,8 +114,6 @@ var app = new Vue({
       vm.clearFiles();
     });
 
-
-
   },
   methods: {
     showTagDetails(tag) {
@@ -124,9 +122,6 @@ var app = new Vue({
     totalWords() {
       var vm = this;
       return this.response.tags_array[this.tagArrayPointer].tags.filter(function(e) {
-        if (e.category == "PROPER NOUN") {
-          console.log(e.word)
-        }
         return ['KNOWN', 'UNKNOWN', 'UNKNOWN ACADEMIC', 'PROPER NOUN'].includes(e.category);
       }).length;
     },
@@ -168,7 +163,6 @@ var app = new Vue({
             vm.screen = 'results';
             vm.forms = vm.getForms();
             vm.getClasses();
-
           } else {
             Swal.fire({
               icon: 'error',
@@ -258,8 +252,7 @@ var app = new Vue({
       var vm = this;
       var color;
       vm.response.tags_array[vm.tagArrayPointer].tags.forEach(function(tag, i) {
-
-
+        
         if (["PUNCT"].includes(tag.pos)) {
           color = 'black';
         }

@@ -1,6 +1,8 @@
 {
     "require": {
         "spatie/pdf-to-text": "^1.52",
-        "lukemadhanga/php-document-parser": "^0.1.5"
+        "lukemadhanga/php-document-parser": "^0.1.5",
+        "filp/whoops": "^2.15",
+        "neitanod/forceutf8": "^2.0"
     }
 }

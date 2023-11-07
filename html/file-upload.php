@@ -4,8 +4,30 @@ require_once  '/var/www/vendor/autoload.php';
 
 use Spatie\PdfToText\Pdf;
 use LukeMadhanga\DocumentParser;
+use \ForceUTF8\Encoding;
+
 ini_set('max_execution_time', 0);
 $start = microtime(true);
+
+$errorHandler = new \Whoops\Run;
+
+$errorHandler->pushHandler(function ($e) {
+    $tz = 'Asia/Tokyo';
+    $tz_obj = new DateTimeZone($tz);
+    $today = new DateTime("now", $tz_obj);
+    $date = $today->format('Y-m-d');
+    $time = $today->format('H:i:s');
+    $path = '/var/www/logs/' . $date . ".txt";
+    if (!file_exists($path)) {
+        touch($path);
+        chmod($path, 0777);
+    }
+    $txt = $e->getMessage() . " at line " . $e->getLine() . " in " . $e->getFile();
+    file_put_contents($path, $time . "\t" . $txt . PHP_EOL, FILE_APPEND | LOCK_EX);
+    die($txt);
+});
+
+$errorHandler->register();
 
 if(empty($_POST)){$_POST=json_decode(file_get_contents("php://input"), true);}
 
@@ -39,12 +61,8 @@ if($_POST['processMethod']=="batched" || $_POST['processMethod']=="merged"){
     $text = str_replace(array("\r", "\n"), ' ', $text);
     $text=preg_replace("/[ ]+/"," ",$text);
     
-    // Replace curly quotes with regular quotes
-    $text = str_replace(
-        ["‘", "’", "“", "”", "‛", "„", "′", "″"], // Curly quotes
-        ["'", "'", '"', '"', "'", '"', "'", '"'], // Regular quotes
-        $text
-    );
+    // Convert all non-unicode characters
+    $text = Encoding::toUTF8($text);
     
     $tags_array[] = ["fileName"=>$fileName,"text"=>$text];
     
@@ -56,6 +74,8 @@ if($_POST['processMethod']=="batched" || $_POST['processMethod']=="merged"){
   if($wordCount>$maxWords[$_POST['processMethod']]){
     die(json_encode(["result"=>"error","message"=>"Uploaded text exceeds maximum word length.<br/> Total text length: ".$wordCount." words | Max length: ".$maxWords[$_POST['processMethod']]." words"]));
   }
+  
+  write_log("Processing ".$wordCount." words..");
   
   if($_POST['processMethod']=="batched"){
     foreach($tags_array as $idx=>$array){
@@ -76,32 +96,30 @@ if($_POST['processMethod']=="batched" || $_POST['processMethod']=="merged"){
   // Remove line-breaks
   
   $text = str_replace(array("\r", "\n"), ' ', $_POST['pastedText']);
-  $text=preg_replace("/[ ]+/"," ",$text);
+  $text=preg_replace("/[ ]+/"," ",$text);  
   
-  // Replace curly quotes with regular quotes
-  $text = str_replace(
-      ["‘", "’", "“", "”", "‛", "„", "′", "″"], // Curly quotes
-      ["'", "'", '"', '"', "'", '"', "'", '"'], // Regular quotes
-      $text
-  );
+  // Convert all non-unicode characters
+  $text = Encoding::toUTF8($text);
   
   $wordCount=str_word_count($text);
   
   if($wordCount>$maxWords){
     die(json_encode(["result"=>"error","message"=>"Uploaded text exceeds maximum word length.<br/> Total text length: ".$wordCount." words | Max length: ".$maxWords." words"]));
   }
+  
+  write_log("Processing ".$wordCount." words..");
     
   $tags_array[] = ["fileName"=>"Pasted Text","text"=>$text,"tags"=>getTags($text)];
   
-  $time_elapsed_secs = microtime(true) - $start;
+  $time_elapsed_secs = round(microtime(true) - $start);
   write_log("Process took " . $time_elapsed_secs . " seconds!");
   echo json_encode(["result"=>"success","tags_array"=>$tags_array]);
   
 }
 
 function getTags($text){
-    $start = microtime(true);
-
+    
+    write_log($text);
     // Load ESLA data
     write_log("Loading ESLA data...");
     $esla_data = loadEslaData("/var/www/esla.csv");
@@ -113,22 +131,24 @@ function getTags($text){
     file_put_contents("/var/www/temp/{$unique}.txt", trim($text));
 
     $output = shell_exec("/var/www/.env/bin/python3 /var/www/process.py $unique");
-    preg_match_all("/\([^)]+\)/", $output, $matches);
+    write_log($output);
+    $lines=explode("\n",trim($output));
     $tags = [];
-
+  
     write_log("Matching tags to ESLA items...");
-    foreach ($matches[0] as $i => $match) {
-        list($word, $pos) = array_map('trim', explode(", ", trim($match, '()')));
-        $word = trim($word, '"');
-        $tags[] = [
-            "word" => $word,
-            "pos" => trim($pos, '"'),
-            "esla_item" => $esla_lookup[strtoupper($word)] ?? null
-        ];
+  
+    foreach($lines as $line){
+      $elements=explode("\t",$line);
+      $word=trim($elements[0],'"');
+      $pos=trim($elements[1],'"');
+      $tags[] = [
+          "word" => $word,
+          "pos" => $pos,
+          "esla_item" => $esla_lookup[strtoupper($word)] ?? null
+      ];
     }
 
     unlink("/var/www/temp/{$unique}.txt");
-    write_log("Process took " . (microtime(true) - $start) . " seconds!");
 
     return $tags;
 }
@@ -179,5 +199,101 @@ function write_log($txt)
       }
       file_put_contents($path, $time . "\t" . $txt . PHP_EOL, FILE_APPEND | LOCK_EX);
     }
+
+function convertCurlyQuotes($text){
+  
+    write_log($text);
+  
+    $quoteMapping = [
+        // U+0082⇒U+201A single low-9 quotation mark
+        "\xC2\x82"     => "'",
+
+        // U+0084⇒U+201E double low-9 quotation mark
+        "\xC2\x84"     => '"',
+
+        // U+008B⇒U+2039 single left-pointing angle quotation mark
+        "\xC2\x8B"     => "'",
+
+        // U+0091⇒U+2018 left single quotation mark
+        "\xC2\x91"     => "'",
+
+        // U+0092⇒U+2019 right single quotation mark
+        "\xC2\x92"     => "'",
+
+        // U+0093⇒U+201C left double quotation mark
+        "\xC2\x93"     => '"',
+
+        // U+0094⇒U+201D right double quotation mark
+        "\xC2\x94"     => '"',
+
+        // U+009B⇒U+203A single right-pointing angle quotation mark
+        "\xC2\x9B"     => "'",
+
+        // U+00AB left-pointing double angle quotation mark
+        "\xC2\xAB"     => '"',
+
+        // U+00BB right-pointing double angle quotation mark
+        "\xC2\xBB"     => '"',
+
+        // U+2018 left single quotation mark
+        "\xE2\x80\x98" => "'",
+
+        // U+2019 right single quotation mark
+        "\xE2\x80\x99" => "'",
+
+        // U+201A single low-9 quotation mark
+        "\xE2\x80\x9A" => "'",
+
+        // U+201B single high-reversed-9 quotation mark
+        "\xE2\x80\x9B" => "'",
+
+        // U+201C left double quotation mark
+        "\xE2\x80\x9C" => '"',
+
+        // U+201D right double quotation mark
+        "\xE2\x80\x9D" => '"',
+
+        // U+201E double low-9 quotation mark
+        "\xE2\x80\x9E" => '"',
+
+        // U+201F double high-reversed-9 quotation mark
+        "\xE2\x80\x9F" => '"',
+
+        // U+2039 single left-pointing angle quotation mark
+        "\xE2\x80\xB9" => "'",
+
+        // U+203A single right-pointing angle quotation mark
+        "\xE2\x80\xBA" => "'",
+
+        // HTML left double quote
+        "&ldquo;"      => '"',
+
+        // HTML right double quote
+        "&rdquo;"      => '"',
+
+        // HTML left sinqle quote
+        "&lsquo;"      => "'",
+
+        // HTML right single quote
+        "&rsquo;"      => "'",
+    ];
+
+    // Decode any HTML entities first.
+    $decodedText = html_entity_decode($text, ENT_QUOTES, "UTF-8");
+
+    // Now iterate over the mapping array and check for each character.
+    foreach ($quoteMapping as $original => $replacement) {
+        $pos = mb_strpos($decodedText, $original);
+        if ($pos !== false) {
+            // Log the character found and its replacement.
+            write_log("Replacing character " . bin2hex($original) . " at position $pos with $replacement.\n");
+        }
+        // We do not replace it here to avoid double logging for multiple occurrences.
+    }
+
+    // After logging, perform the actual replacement.
+    return strtr($decodedText, $quoteMapping);
+  
+}
 
 ?>
