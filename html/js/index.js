@@ -5,13 +5,19 @@ var app = new Vue({
     whitelist: ["B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "&", "O'CLOCK","'S"],
     multipleFiles: false,
     tagArrayPointer: 0,
-    pastedText:"It's a lovely day. Let's start it with a laugh. There's my daddy.",
-    //pastedText: 'My name is Dylan and my name is Grant, & I will grant you 3 wishes in an e-mail at 4 o’clock.',
-    //pastedText:`In March, the Willows would march to the river's bank. Summer and Autumn, the twins, would spring into action, while Rose, their sister, rose from her bed at dawn. Grace would grace the gardens with her presence, and the family judge, named Judge, would judge their playful contests. With every step and every name, March was more than a month—it was a stage where time danced in delightful loops.`,
-    //pastedText: `If, how, when, where, why? Do you want Paul's cake? Ought we? Shall we? Whilst you were doing that whereby albeit! Are you a flurmi? No I'm a dermifloop. My name is Paul, and I'm a ventriloquist. Can you review these fractions accurately? I want to send you an e-mail at 5 o'clock. You're not serious. I'll see you in twenty-five minutes. 1 2 3 4 5 6 7 8 9 one two three four five six seven eight nine ten. Hello, Mr. Smith, this is Dr. Smith.`,
+    pastedText:`
+    There are two ways to add texts to this profiler:
+
+    1) Replace this text by copy/pasting the text of your choice here.
+    2) Click on the “File Upload” tab, and either Drop your file into this text box, or click in the textbox to choose your file with your computer’s finder.
+
+    This web application was conceived by (and funded by research awards granted to) Mike Murphy and Geoff Pinchbeck in the School of Linguistics and Language Studies at Carleton University, and the program was designed and coded by Paul Raine. Carleton University Research Computing Services assisted with the setup and the server is hosted by the Digital Research Alliance of Canada.
+
+    If you have any questions or suggestions, please contact Geoff[dot]Pinchbeck[at]Carleton[dot]ca
+    `,
     showAdvancedSettings: false,
     forms: {},
-    tswk: 80,
+    tswk: 65,
     pwkr: 95,
     eslaLevel: 1300,
     screen: 'copypaste',
