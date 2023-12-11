@@ -41,7 +41,7 @@
 
   <div v-show="screen=='copypaste'">
     <p class="lead">Copy and paste text (max {{maxWords[processMethod]}} words total):</p>
-    <textarea v-model='pastedText' style='height:200px;resize:none;' class="form-control"></textarea>
+    <textarea v-model='pastedText' style='height:300px;resize:none;' class="form-control"></textarea>
     <hr>
     <div style='height:50px;text-align:center'>
       <button :disabled='!pastedText.trim().length || processing' @click='clearText' class="btn btn-danger d-inline-block">Clear</button>

@@ -5,16 +5,7 @@ var app = new Vue({
     whitelist: ["B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "&", "O'CLOCK","'S"],
     multipleFiles: false,
     tagArrayPointer: 0,
-    pastedText:`
-    There are two ways to add texts to this profiler:
-
-    1) Replace this text by copy/pasting the text of your choice here.
-    2) Click on the “File Upload” tab, and either Drop your file into this text box, or click in the textbox to choose your file with your computer’s finder.
-
-    This web application was conceived by (and funded by research awards granted to) Mike Murphy and Geoff Pinchbeck in the School of Linguistics and Language Studies at Carleton University, and the program was designed and coded by Paul Raine. Carleton University Research Computing Services assisted with the setup and the server is hosted by the Digital Research Alliance of Canada.
-
-    If you have any questions or suggestions, please contact Geoff[dot]Pinchbeck[at]Carleton[dot]ca
-    `,
+    pastedText:`There are two ways to add texts to this profiler:\n\n1) Replace this text by copy/pasting the text of your choice here.\n2) Click on the “File Upload” tab, and either Drop your file into this text box, or click in the textbox to choose your file with your computer’s finder.\n\nThis web application was conceived by (and funded by research awards granted to) Mike Murphy and Geoff Pinchbeck in the School of Linguistics and Language Studies at Carleton University, and the program was designed and coded by Paul Raine. Carleton University Research Computing Services assisted with the setup and the server is hosted by the Digital Research Alliance of Canada.\n\nIf you have any questions or suggestions, please contact Geoff[dot]Pinchbeck[at]Carleton[dot]ca`,
     showAdvancedSettings: false,
     forms: {},
     tswk: 65,
