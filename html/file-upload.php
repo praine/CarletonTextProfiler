@@ -64,6 +64,10 @@ if($_POST['processMethod']=="batched" || $_POST['processMethod']=="merged"){
     // Convert all non-unicode characters
     $text = Encoding::toUTF8($text);
     
+    // Convert all non-standard apostrophe types
+    
+    $text=standardizeApostrophesToStraight($text);
+    
     $tags_array[] = ["fileName"=>$fileName,"text"=>$text];
     
   }
@@ -100,6 +104,9 @@ if($_POST['processMethod']=="batched" || $_POST['processMethod']=="merged"){
   
   // Convert all non-unicode characters
   $text = Encoding::toUTF8($text);
+  
+  // Convert all non-standard apostrophe types
+  $text=standardizeApostrophesToStraight($text);
   
   $wordCount=str_word_count($text);
   
@@ -294,6 +301,20 @@ function convertCurlyQuotes($text){
     // After logging, perform the actual replacement.
     return strtr($decodedText, $quoteMapping);
   
+}
+
+function standardizeApostrophesToStraight($text) {
+    // Define an array with the different types of apostrophes and similar characters to be replaced
+    // This now includes the backtick (`) character
+    $apostrophes = array("\u{2019}", "\u{2018}", "\u{201B}", "\u{02BC}", "\u{02BB}", "\u{2032}", "\u{FF07}", "`");
+
+    // The standard straight apostrophe to replace with
+    $standardStraightApostrophe = "'"; // U+0027 APOSTROPHE
+
+    // Replace all occurrences of the apostrophes in the text
+    $text = str_replace($apostrophes, $standardStraightApostrophe, $text);
+
+    return $text;
 }
 
 ?>
