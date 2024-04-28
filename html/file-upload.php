@@ -1,6 +1,6 @@
 <?php
 
-require_once  '/var/www/vendor/autoload.php';
+require_once  '/var/www/textprofiler/vendor/autoload.php';
 
 use Spatie\PdfToText\Pdf;
 use LukeMadhanga\DocumentParser;
@@ -17,7 +17,7 @@ $errorHandler->pushHandler(function ($e) {
     $today = new DateTime("now", $tz_obj);
     $date = $today->format('Y-m-d');
     $time = $today->format('H:i:s');
-    $path = '/var/www/logs/' . $date . ".txt";
+    $path = '/var/www/textprofiler/logs/' . $date . ".txt";
     if (!file_exists($path)) {
         touch($path);
         chmod($path, 0777);
@@ -129,15 +129,15 @@ function getTags($text){
     write_log($text);
     // Load ESLA data
     write_log("Loading ESLA data...");
-    $esla_data = loadEslaData("/var/www/esla.csv");
+    $esla_data = loadEslaData("/var/www/textprofiler/esla.csv");
     $esla_lookup = buildEslaLookup($esla_data);
 
     // Tag text with SpaCy
     write_log("Tagging text with SpaCy...");
     $unique = uniqid();
-    file_put_contents("/var/www/temp/{$unique}.txt", trim($text));
+    file_put_contents("/var/www/textprofiler/temp/{$unique}.txt", trim($text));
 
-    $output = shell_exec("/var/www/.env/bin/python3 /var/www/process.py $unique");
+    $output = shell_exec("/var/www/textprofiler/.env/bin/python3 /var/www/textprofiler/process.py $unique");
     write_log($output);
     $lines=explode("\n",trim($output));
     $tags = [];
@@ -155,7 +155,7 @@ function getTags($text){
       ];
     }
 
-    unlink("/var/www/temp/{$unique}.txt");
+    unlink("/var/www/textprofiler/temp/{$unique}.txt");
 
     return $tags;
 }
@@ -199,7 +199,7 @@ function write_log($txt)
       $today = new DateTime("now", $tz_obj);
       $date = $today->format('Y-m-d');
       $time = $today->format('H:i:s');
-      $path = '/var/www/logs/' . $date . ".txt";
+      $path = '/var/www/textprofiler/logs/' . $date . ".txt";
       if (!file_exists($path)) {
           touch($path);
           chmod($path, 0777);

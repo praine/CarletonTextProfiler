@@ -5,7 +5,7 @@ import en_core_web_sm
 
 nlp = en_core_web_sm.load()
 
-with open('/var/www/temp/'+sys.argv[1]+'.txt') as f:
+with open('/var/www/textprofiler/temp/'+sys.argv[1]+'.txt') as f:
     string = f.read()
     doc = nlp(string)
     output = [(w.text, w.pos_) for w in doc]
